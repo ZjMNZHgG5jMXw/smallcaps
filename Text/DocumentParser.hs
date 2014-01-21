@@ -8,16 +8,15 @@ import            Data.Default
 import            Data.LaTeX
 import qualified  Text.LaTeXParser     as L
 import            Data.Config
-import            Data.StopState
 import            Text.PrintableParser    ( runPrintableWith )
 
-type Parser = L.Parser StopState
+type Parser = L.Parser ParserState
 
 runDocument :: Config -> LaTeX -> LaTeX
-runDocument conf = fst . runDocumentWith def (initState conf)
+runDocument conf = fst . runDocumentWith (ParserState { config = conf, stop = initState conf })
 
-runDocumentWith :: Config -> SubParser LaTeX
-runDocumentWith conf state = either (error . show) id . runParser (stateAnd (document conf)) state ""
+runDocumentWith :: SubParser LaTeX
+runDocumentWith state = either (error . show) id . runParser (stateAnd document) state ""
   where stateAnd p = do
           a <- p
           s <- getState
@@ -27,81 +26,85 @@ runSubDocument :: SubParser a -> a -> Parser a
 runSubDocument fun x = do
   state <- getState
   let (x', state') = fun state x
-  if state /= Skip && state' == Skip
-  then putState None -- replace Skip with None at the block end
+  if stop state /= Skip && stop state' == Skip
+  then modifyState (\state -> state { stop = None }) -- replace Skip with None at the block end
   else putState state'
   return x'
 
 isolateSubDocument :: SubParser a -> a -> Parser a
-isolateSubDocument fun = return . fst . fun def
+isolateSubDocument fun x = do
+  state <- getState
+  return $ fst $ fun (state { stop = initState (config state) }) x
 
-decideSub :: Config -> LaTeXElement -> SubParser a -> a -> Parser a
-decideSub conf element fun
-  | isolate conf element  = isolateSubDocument fun
-  | search  conf element  = runSubDocument fun -- TODO unnecessary when user state == Skip
-  | otherwise             = return
+decideSub :: LaTeXElement -> SubParser a -> a -> Parser a
+decideSub element fun x = sub =<< fmap config getState where
+  sub conf
+    | isolate conf element  = isolateSubDocument fun x
+    | search  conf element  = runSubDocument fun x -- TODO unnecessary when user state == Skip
+    | otherwise             = return x
 
-document :: Config -> Parser LaTeX
-document = many . documentElement
+document :: Parser LaTeX
+document = many documentElement
 
-documentElement :: Config -> Parser LaTeXElement
-documentElement conf = msum
-  [ printable   conf
-  , macro       conf
-  , environment conf
-  , block       conf
-  , comment     conf
+documentElement :: Parser LaTeXElement
+documentElement = msum
+  [ printable
+  , macro
+  , environment
+  , block
+  , comment
   ]
 
-printable :: Config -> Parser LaTeXElement
-printable conf = do
+printable :: Parser LaTeXElement
+printable = do
   x@(Printable text) <- L.anyPrintable
-  implySkip conf x
-  text' <- decideSub conf x (runPrintableWith conf) text
-  implyEos conf x
+  implySkip x
+  text' <- decideSub x runPrintableWith text
+  implyEos x
   return $ Printable text'
 
-macro :: Config -> Parser LaTeXElement
-macro conf = do
+macro :: Parser LaTeXElement
+macro = do
   x@(Macro name latex) <- L.anyMacro
-  implySkip conf x
-  latex' <- decideSub conf x (runDocumentWith conf) latex
-  implyEos conf x
+  implySkip x
+  latex' <- decideSub x runDocumentWith latex
+  implyEos x
   return $ Macro name latex'
 
-environment :: Config -> Parser LaTeXElement
-environment conf = do
+environment :: Parser LaTeXElement
+environment = do
   x@(Environment name latex) <- L.anyEnvironment
-  implySkip conf x
-  latex' <- decideSub conf x (runDocumentWith conf) latex
-  implyEos conf x
+  implySkip x
+  latex' <- decideSub x runDocumentWith latex
+  implyEos x
   return $ Environment name latex'
 
-block :: Config -> Parser LaTeXElement
-block conf = do
+block :: Parser LaTeXElement
+block = do
   x@(Block latex) <- L.anyBlock
-  implySkip conf x
-  latex' <- decideSub conf x (runDocumentWith conf) latex
-  implyEos conf x
+  implySkip x
+  latex' <- decideSub x runDocumentWith latex
+  implyEos x
   return $ Block latex'
 
-comment :: Config -> Parser LaTeXElement
-comment conf = do
+comment :: Parser LaTeXElement
+comment = do
   x <- L.anyComment
-  implySkip conf x
-  implyEos conf x
+  implySkip x
+  implyEos x
   return x
 
-implySkip :: Config -> LaTeXElement -> Parser ()
-implySkip conf element
-  | skip conf element = putState Skip
-  | otherwise         = return ()
+implySkip :: LaTeXElement -> Parser ()
+implySkip element = sub =<< fmap config getState where
+  sub conf
+    | skip conf element = modifyState (\state -> state { stop = Skip })
+    | otherwise         = return ()
 
-implyEos :: Config -> LaTeXElement -> Parser ()
-implyEos conf element = do
+implyEos :: LaTeXElement -> Parser ()
+implyEos element = do
   state <- getState
-  if state /= Skip && eos conf element
-  then putState def
+  if stop state /= Skip && eos (config state) element
+  then modifyState (\state -> state { stop = initState (config state) })
   else return ()
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

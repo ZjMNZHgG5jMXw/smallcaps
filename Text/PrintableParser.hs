@@ -11,21 +11,20 @@ import Data.Default
 import Control.Monad
 
 import Data.Config
-import Data.StopState
 
-type Parser = GenParser StopState
+type Parser = GenParser ParserState
 
-runPrintableWith :: Config -> SubParser Text
-runPrintableWith conf state = either (error . show) id . runParser (printable conf >>= \a -> fmap ((,) a) getState) state ""
+runPrintableWith :: SubParser Text
+runPrintableWith state = either (error . show) id . runParser (printable >>= \a -> fmap ((,) a) getState) state ""
 
-printable :: Config -> Parser Text
-printable = fmap (intercalate (pack "")) . many . printableElement
+printable :: Parser Text
+printable = fmap (intercalate (pack "")) $ many $ printableElement
 
-printableElement :: Config -> Parser Text
-printableElement conf = msum
+printableElement :: Parser Text
+printableElement = msum
   [ lowers
-  , uppers  conf
-  , stop
+  , uppers
+  , period
   , newline
   , space
   , misc
@@ -34,18 +33,18 @@ printableElement conf = msum
 lowers :: Parser Text
 lowers = fmap pack $ many1 lower >>= pass reset
 
-uppers :: Config -> Parser Text
-uppers conf = do
+uppers :: Parser Text
+uppers = do
   text <- fmap pack $ many1 upper
   state <- getState
-  if state == Skip
+  if stop state == Skip
   then return text
   else do
-    let (h,t) = uc text state
-    pass reset $ intercalate (pack "") [h,replace' conf t]
+    let (h,t) = uc text (stop state)
+    pass reset $ h `append` replace' (config state) t
 
-stop :: Parser Text
-stop = fmap singleton $ oneOf ".!?" >>= pass set
+period :: Parser Text
+period = fmap singleton $ oneOf ".!?" >>= pass set
 
 space :: Parser Text
 space = fmap singleton $ P.space >>= pass sticky
@@ -59,23 +58,23 @@ misc = fmap singleton $ anyChar >>= pass reset
 pass :: Parser b -> a -> Parser a
 pass m a = do
   state <- getState
-  if state == Skip
+  if stop state == Skip
   then return a
   else m >> return a
 
 reset :: Parser ()
-reset = setState None
+reset = modifyState (\state -> state { stop = None })
 
 set :: Parser ()
-set = setState Stop
+set = modifyState (\state -> state { stop = Stop })
 
 inc :: Parser ()
-inc = modifyState inc' where
+inc = modifyState (\state -> state { stop = inc' (stop state) }) where
   inc' None = NewLine
   inc' _    = NewSentence
 
 sticky :: Parser ()
-sticky = modifyState inc' where
+sticky = modifyState (\state -> state { stop = inc' (stop state) }) where
   inc' None     = None
   inc' NewLine  = NewLine
   inc' _        = NewSentence

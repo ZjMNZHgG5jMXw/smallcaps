@@ -3,7 +3,24 @@ module Data.Config where
 import Data.Default
 import Data.Text    hiding ( map, replace )
 import Data.LaTeX
-import Data.StopState
+
+data StopState
+  = None
+  | NewLine
+  | Stop
+  | NewSentence
+  | Skip
+  deriving (Show, Eq)
+
+instance Default StopState where
+  def = NewSentence
+
+type SubParser a = ParserState -> a -> (a, ParserState)
+
+data ParserState = ParserState
+  { config  :: Config
+  , stop    :: StopState
+  }
 
 data Config = Config
   { initState :: StopState              -- initial document parser state
