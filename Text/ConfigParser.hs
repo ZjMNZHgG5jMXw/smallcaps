@@ -41,6 +41,7 @@ preamble = char '%' >> lex (asciiCI (pack "smallcaps"))
 profileMain :: Parser Config
 profileMain = profilePre >> msum
   [ profileDefault
+  , profileClean
   , profileConservative
   , profileBusy
   ]
@@ -50,6 +51,9 @@ profilePre = lex (asciiCI (pack "reset")) >> lex (asciiCI (pack "profile"))
 
 profileDefault :: Parser Config
 profileDefault = lex $ asciiCI (pack "default") >> return def
+
+profileClean :: Parser Config
+profileClean = lex $ asciiCI (pack "clean") >> return clean
 
 profileConservative :: Parser Config
 profileConservative = lex $ asciiCI (pack "conservative") >> return conservative
