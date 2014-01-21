@@ -26,7 +26,7 @@ comment :: Parser TeXElement
 comment = fmap Comment $ do
   b <- commentChar
   c <- P.takeTill P.isEndOfLine
-  P.endOfLine
+  C.option () P.endOfLine
   return (T.cons b (T.snoc c '\n'))
 
 macro :: Parser TeXElement
