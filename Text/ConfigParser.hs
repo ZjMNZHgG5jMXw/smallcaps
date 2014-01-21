@@ -19,6 +19,7 @@ reconfiguration :: Config -> Parser Config
 reconfiguration conf = preamble >> msum
   [ profileMain
   , startMain   conf
+  , periodMain  conf
   , replaceMain conf
   , searchMain  conf
   , isolateMain conf
@@ -81,6 +82,17 @@ startSkip conf = lex (asciiCI (pack "out")) >> lex (asciiCI (pack "action")) >> 
 
 startNone :: Config -> Parser Config
 startNone conf = lex (asciiCI (pack "in")) >> lex (asciiCI (pack "sentence")) >> return (conf { initState = None })
+
+-- Period chars
+
+periodMain :: Config -> Parser Config
+periodMain = (periodPre >>) . periodSigns
+
+periodPre :: Parser Text
+periodPre = lex (asciiCI (pack "periods")) >> lex (asciiCI (pack "are"))
+
+periodSigns :: Config -> Parser Config
+periodSigns conf = lex (takeWhile1 isPunctuation) >>= \s -> return $ conf { periodChars = unpack s }
 
 -- Replace string
 

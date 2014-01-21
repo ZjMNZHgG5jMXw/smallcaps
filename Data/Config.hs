@@ -24,6 +24,7 @@ data ParserState = ParserState
 
 data Config = Config
   { initState     :: StopState              -- initial document parser state
+  , periodChars   :: [Char]                 -- signs recognised as periods
   , search        :: LaTeXElement -> Bool   -- search block/macro/environment for caps
   , isolate       :: LaTeXElement -> Bool   -- open an isolated state for a block/macro/environment
   , skip          :: LaTeXElement -> Bool   -- skip searching for the rest of the block etc.
@@ -35,6 +36,7 @@ data Config = Config
 instance Default Config where
   def = Config
     { initState     = def
+    , periodChars   = defaultPeriodChars
     , search        = defaultSearch
     , isolate       = defaultIsolate
     , skip          = defaultSkip
@@ -42,6 +44,9 @@ instance Default Config where
     , replace       = defaultReplace
     , inlineConfig  = True
     }
+
+defaultPeriodChars :: [Char]
+defaultPeriodChars = ".!?"
 
 defaultSearch :: LaTeXElement -> Bool
 defaultSearch = whitelist ["document"]
@@ -70,6 +75,7 @@ defaultReplace caps = pack "{\\small " `append` snoc caps '}'
 clean :: Config
 clean = Config
   { initState     = Skip
+  , periodChars   = []
   , search        = const False
   , isolate       = const False
   , skip          = const False
@@ -82,6 +88,7 @@ clean = Config
 conservative :: Config
 conservative = Config
   { initState     = def
+  , periodChars   = defaultPeriodChars
   , search        = whitelist []
   , isolate       = const False
   , skip          = defaultSkip

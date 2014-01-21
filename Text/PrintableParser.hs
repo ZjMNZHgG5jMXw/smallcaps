@@ -44,7 +44,9 @@ uppers = do
     pass reset $ h `append` replace' (config state) t
 
 period :: Parser Text
-period = fmap singleton $ oneOf ".!?" >>= pass set
+period = do
+  ps <- fmap (periodChars . config) getState
+  fmap singleton $ oneOf ps >>= pass set
 
 space :: Parser Text
 space = fmap singleton $ P.space >>= pass sticky
