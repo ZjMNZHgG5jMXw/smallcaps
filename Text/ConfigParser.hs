@@ -17,7 +17,7 @@ reconfigure conf = either (const Nothing) Just . parseOnly (reconfiguration conf
 
 reconfiguration :: Config -> Parser Config
 reconfiguration conf = preamble >> msum
-  [ policyMain
+  [ profileMain
   , startMain   conf
   , replaceMain conf
   , searchMain  conf
@@ -38,17 +38,24 @@ preamble = char '%' >> lex (asciiCI (pack "smallcaps"))
 
 -- Policy
 
-policyMain :: Parser Config
-policyMain = policyPre >> policyDefault `mplus` policyConservative
+profileMain :: Parser Config
+profileMain = profilePre >> msum
+  [ profileDefault
+  , profileConservative
+  , profileBusy
+  ]
 
-policyPre :: Parser Text
-policyPre = lex $ asciiCI (pack "reset")
+profilePre :: Parser Text
+profilePre = lex (asciiCI (pack "reset")) >> lex (asciiCI (pack "profile"))
 
-policyDefault :: Parser Config
-policyDefault = lex $ asciiCI (pack "default") >> return def
+profileDefault :: Parser Config
+profileDefault = lex $ asciiCI (pack "default") >> return def
 
-policyConservative :: Parser Config
-policyConservative = lex $ asciiCI (pack "conservative") >> return conservative
+profileConservative :: Parser Config
+profileConservative = lex $ asciiCI (pack "conservative") >> return conservative
+
+profileBusy :: Parser Config
+profileBusy = lex $ asciiCI (pack "busy") >> return busy
 
 -- Initial stop state
 
@@ -105,7 +112,7 @@ searchPre :: Parser Text
 searchPre = lex $ asciiCI (pack "search")
 
 searchList :: Config -> Parser Config
-searchList conf = list (search conf) >>= \fun -> return $ conf { search = fun }
+searchList conf = list' (search conf) >>= \fun -> return $ conf { search = fun }
 
 -- Isolate filter
 
@@ -145,6 +152,9 @@ eosList conf = list (eos conf) >>= \fun -> return $ conf { eos = fun }
 list :: (LaTeXElement -> Bool) -> Parser (LaTeXElement -> Bool)
 list fun = msum [listBlack fun, listWhite fun, listConstAll, listConstNone]
 
+list' :: (LaTeXElement -> Bool) -> Parser (LaTeXElement -> Bool)
+list' fun = msum [listBlack fun, listWhite fun, listConstAll', listConstNone']
+
 listBlack :: (LaTeXElement -> Bool) -> Parser (LaTeXElement -> Bool)
 listBlack fun = lex (char '-') >> listItems >>= \xs -> return (\x -> not (name x `elem` xs) && fun x)
 
@@ -152,10 +162,16 @@ listWhite :: (LaTeXElement -> Bool) -> Parser (LaTeXElement -> Bool)
 listWhite fun = lex $ char '+' >> listItems >>= \xs -> return (\x -> name x `elem` xs || fun x)
 
 listConstAll :: Parser (a -> Bool)
-listConstAll = lex (char '*') >> return (const True) -- TODO exclude comments for search
+listConstAll = lex (char '*') >> return (const True)
+
+listConstAll' :: Parser (LaTeXElement -> Bool)
+listConstAll' = lex (char '*') >> return (blacklist [])
 
 listConstNone :: Parser (a -> Bool)
-listConstNone = lex (char '/') >> return (const False) -- TODO include blocks etc for search
+listConstNone = lex (char '/') >> return (const False)
+
+listConstNone' :: Parser (LaTeXElement -> Bool)
+listConstNone' = lex (char '/') >> return (whitelist [])
 
 listItems :: Parser [Text]
 listItems = do

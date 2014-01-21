@@ -66,9 +66,9 @@ defaultReplace caps = pack "{\\small " `append` snoc caps '}'
 (|||) :: (LaTeXElement -> Bool) -> (LaTeXElement -> Bool) -> LaTeXElement -> Bool
 (|||) fun gun element = fun element || gun element
 
--- most conservative configuration
-conservative :: Config
-conservative = Config
+-- clean configuration, all substitutions off
+clean :: Config
+clean = Config
   { initState     = Skip
   , search        = const False
   , isolate       = const False
@@ -77,6 +77,22 @@ conservative = Config
   , replace       = id
   , inlineConfig  = True
   }
+
+-- conservative configuration
+conservative :: Config
+conservative = Config
+  { initState     = def
+  , search        = whitelist []
+  , isolate       = const False
+  , skip          = defaultSkip
+  , eos           = after ["\\par"]
+  , replace       = defaultReplace
+  , inlineConfig  = True
+  }
+
+-- busy configuration
+busy :: Config
+busy = conservative { search = blacklist [] }
 
 whitelist :: [String] -> LaTeXElement -> Bool
 whitelist _     (Printable _)     = True
