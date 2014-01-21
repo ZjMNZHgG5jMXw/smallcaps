@@ -23,22 +23,24 @@ data ParserState = ParserState
   }
 
 data Config = Config
-  { initState :: StopState              -- initial document parser state
-  , search    :: LaTeXElement -> Bool   -- search block/macro/environment for caps
-  , isolate   :: LaTeXElement -> Bool   -- open an isolated state for a block/macro/environment
-  , skip      :: LaTeXElement -> Bool   -- skip searching for the rest of the block etc.
-  , eos       :: LaTeXElement -> Bool   -- end of sentence, start with new one
-  , replace   :: Text -> Text           -- formatting for small caps
+  { initState     :: StopState              -- initial document parser state
+  , search        :: LaTeXElement -> Bool   -- search block/macro/environment for caps
+  , isolate       :: LaTeXElement -> Bool   -- open an isolated state for a block/macro/environment
+  , skip          :: LaTeXElement -> Bool   -- skip searching for the rest of the block etc.
+  , eos           :: LaTeXElement -> Bool   -- end of sentence, start with new one
+  , replace       :: Text -> Text           -- formatting for small caps
+  , inlineConfig  :: Bool                   -- dynamic reconfiguration in LaTeX comments
   }
 
 instance Default Config where
   def = Config
-    { initState = def
-    , search    = defaultSearch
-    , isolate   = defaultIsolate
-    , skip      = defaultSkip
-    , eos       = defaultEos
-    , replace   = defaultReplace
+    { initState     = def
+    , search        = defaultSearch
+    , isolate       = defaultIsolate
+    , skip          = defaultSkip
+    , eos           = defaultEos
+    , replace       = defaultReplace
+    , inlineConfig  = True
     }
 
 defaultSearch :: LaTeXElement -> Bool
@@ -67,12 +69,13 @@ defaultReplace caps = pack "{\\small " `append` snoc caps '}'
 -- most conservative configuration
 conservative :: Config
 conservative = Config
-  { initState = Skip
-  , search    = const False
-  , isolate   = const False
-  , skip      = const False
-  , eos       = const False
-  , replace   = id
+  { initState     = Skip
+  , search        = const False
+  , isolate       = const False
+  , skip          = const False
+  , eos           = const False
+  , replace       = id
+  , inlineConfig  = True
   }
 
 whitelist :: [String] -> LaTeXElement -> Bool

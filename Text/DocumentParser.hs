@@ -9,6 +9,7 @@ import            Data.LaTeX
 import qualified  Text.LaTeXParser     as L
 import            Data.Config
 import            Text.PrintableParser    ( runPrintableWith )
+import            Text.ConfigParser       ( reconfigure )
 
 type Parser = L.Parser ParserState
 
@@ -92,6 +93,11 @@ comment = do
   x <- L.anyComment
   implySkip x
   implyEos x
+  let (Comment text) = x
+  conf <- fmap config getState
+  if inlineConfig conf
+  then maybe (return ()) (\c -> modifyState (\s -> s { config = c })) $ reconfigure conf text
+  else return ()
   return x
 
 implySkip :: LaTeXElement -> Parser ()
