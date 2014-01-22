@@ -117,7 +117,7 @@ replaceMacro :: Config -> Style -> Parser Config
 replaceMacro conf style
   | style == NoArg = fun (\macro caps -> pack "{\\" `append` macro `append` cons ' ' (snoc caps '}'))
   | style == InArg = fun (\macro caps -> cons '\\' macro `append` cons '{' (snoc caps '}'))
-  where fun gun = lex $ char '\\' >> takeWhile1 (isAlpha) >>= \macro -> return $ conf { replace = gun macro }
+  where fun gun = lex $ char '\\' >> takeWhile1 isAlpha >>= \macro -> return $ conf { replace = gun macro }
 
 -- Search filter
 
@@ -199,7 +199,9 @@ listItem :: Parser Text
 listItem = listItemMacro `mplus` listItemEnvironment
 
 listItemMacro :: Parser Text
-listItemMacro = lex (char '\\' >> fmap (cons '\\') (takeWhile isAlpha))
+listItemMacro = lex (char '\\' >> fmap (cons '\\') macroName)
+  where macroName   = takeWhile1 isAlpha `mplus` fmap singleton (satisfy isPrint')
+        isPrint' c  = isPrint c && not (isNumber c || isSpace c)
 
 listItemEnvironment :: Parser Text
 listItemEnvironment = lex (takeWhile isAlpha)

@@ -49,7 +49,7 @@ defaultPeriodChars :: [Char]
 defaultPeriodChars = ".!?"
 
 defaultSearch :: LaTeXElement -> Bool
-defaultSearch = whitelist ["document"]
+defaultSearch = whitelist ["document", "\\\\"]
 
 defaultIsolate :: LaTeXElement -> Bool
 defaultIsolate = after ["\\footnote", "\\marginpar"]

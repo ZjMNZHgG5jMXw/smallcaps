@@ -49,7 +49,7 @@ macroBegin :: Parser Char
 macroBegin = P.char '\\'
 
 macroName :: Parser Text
-macroName = macroLabel `mplus` tt ascii
+macroName = macroLabel `mplus` tt print'
 
 macroLabel :: Parser Text
 macroLabel = P.takeWhile1 isLabelLetter
@@ -60,8 +60,9 @@ blockBegin = P.char '{'
 blockEnd :: Parser Char
 blockEnd = P.char '}'
 
-ascii :: Parser Char
-ascii = P.satisfy isAscii
+print' :: Parser Char
+print' = P.satisfy isPrint'
+  where isPrint' c = isPrint c && not (isNumber c || isSpace c)
 
 tt :: Parser Char -> Parser Text
 tt = fmap T.singleton
