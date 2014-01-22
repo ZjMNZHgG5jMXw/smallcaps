@@ -118,7 +118,7 @@ usage = do
   putStrLn    "\nWithout filename, the program starts in filter mode.\n"
   putStrLn    "Inline configuration:"
   putStrLn    " % smallcaps reset profile <name>"
-  putStrLn    "    reset configuration profile to <name>."
+  putStrLn    "    reset configuration profile to <name>"
   putStrLn    "    default:       default configuration"
   putStrLn    "    conservative:  restrictive settings for few actions only"
   putStrLn    "    busy:          search all environments and macros"
