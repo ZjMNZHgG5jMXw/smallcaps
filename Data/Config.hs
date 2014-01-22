@@ -1,8 +1,8 @@
 module Data.Config where
 
-import Data.Default
-import Data.Text    hiding ( map, replace )
-import Data.LaTeX
+import Data.Default     ( Default, def )
+import Data.Text        ( Text, pack, snoc, append )
+import Data.LaTeX       ( LaTeXElement (..) )
 
 data StopState
   = None

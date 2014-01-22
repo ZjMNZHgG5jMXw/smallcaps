@@ -1,16 +1,14 @@
 module Text.PrintableParser where
 
-import Prelude hiding ( head, tail, null )
+import            Prelude      hiding ( head, tail, null )
 
-import Text.Parsec hiding ( space, newline )
-import qualified Text.Parsec as P
-import Text.Parsec.Text ( GenParser )
-import Data.Text hiding ( replace )
-import Data.Char
-import Data.Default
-import Control.Monad
+import            Text.Parsec         ( runParser, oneOf, anyChar, many, many1, lower, upper, getState, modifyState )
+import qualified  Text.Parsec    as P ( space, newline )
+import            Text.Parsec.Text    ( GenParser )
+import            Data.Text           ( Text, null, empty, singleton, pack, head, tail, append, intercalate )
+import            Control.Monad       ( msum )
 
-import Data.Config
+import            Data.Config         ( Config (..), StopState (..), ParserState (..), SubParser )
 
 type Parser = GenParser ParserState
 

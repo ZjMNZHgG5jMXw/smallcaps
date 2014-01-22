@@ -1,6 +1,6 @@
 module Data.LaTeX where
 
-import Data.Text hiding ( map )
+import Data.Text ( Text, singleton, pack, intercalate )
 
 type LaTeX = [LaTeXElement]
 

@@ -1,15 +1,16 @@
 module Text.DocumentParser where
 
-import            Text.Parsec     hiding  ( satisfy )
-import            Data.Text               ( Text, empty, pack, unpack, intercalate )
-import            Control.Monad
-import            Data.Default
+import            Text.Parsec           ( runParser, getState, modifyState, putState, many )
+import            Data.Text             ( Text, empty, pack, unpack, intercalate )
+import            Control.Monad         ( msum )
+import            Data.Default          ( def )
 
-import            Data.LaTeX
-import qualified  Text.LaTeXParser     as L
-import            Data.Config
-import            Text.PrintableParser    ( runPrintableWith )
-import            Text.ConfigParser       ( reconfigure )
+import            Data.LaTeX            ( LaTeX, LaTeXElement (..) )
+import qualified  Text.LaTeXParser as L ( Parser )
+import            Text.LaTeXParser      ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyComment )
+import            Data.Config           ( ParserState (..), Config (..), StopState (..), SubParser )
+import            Text.PrintableParser  ( runPrintableWith )
+import            Text.ConfigParser     ( reconfigure )
 
 type Parser = L.Parser ParserState
 
@@ -58,7 +59,7 @@ documentElement = msum
 
 printable :: Parser LaTeXElement
 printable = do
-  x@(Printable text) <- L.anyPrintable
+  x@(Printable text) <- anyPrintable
   implySkip x
   text' <- decideSub x runPrintableWith text
   implyEos x
@@ -66,7 +67,7 @@ printable = do
 
 macro :: Parser LaTeXElement
 macro = do
-  x@(Macro name latex) <- L.anyMacro
+  x@(Macro name latex) <- anyMacro
   implySkip x
   latex' <- decideSub x runDocumentWith latex
   implyEos x
@@ -74,7 +75,7 @@ macro = do
 
 environment :: Parser LaTeXElement
 environment = do
-  x@(Environment name latex) <- L.anyEnvironment
+  x@(Environment name latex) <- anyEnvironment
   implySkip x
   latex' <- decideSub x runDocumentWith latex
   implyEos x
@@ -82,7 +83,7 @@ environment = do
 
 block :: Parser LaTeXElement
 block = do
-  x@(Block latex) <- L.anyBlock
+  x@(Block latex) <- anyBlock
   implySkip x
   latex' <- decideSub x runDocumentWith latex
   implyEos x
@@ -90,7 +91,7 @@ block = do
 
 comment :: Parser LaTeXElement
 comment = do
-  x <- L.anyComment
+  x <- anyComment
   implySkip x
   implyEos x
   let (Comment text) = x

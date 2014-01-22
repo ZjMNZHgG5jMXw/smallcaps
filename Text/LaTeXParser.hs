@@ -1,9 +1,9 @@
 module Text.LaTeXParser where
 
-import Text.Parsec hiding ( satisfy )
-import Data.Text ( Text, empty, pack, unpack, intercalate )
+import Text.Parsec  ( Parsec, SourcePos, tokenPrim )
+import Data.Text    ( Text, empty, pack, unpack, intercalate )
 
-import Data.LaTeX
+import Data.LaTeX   ( LaTeX, LaTeXElement (..) )
 
 type Parser u = Parsec LaTeX u
 

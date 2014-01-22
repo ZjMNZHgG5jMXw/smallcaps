@@ -2,15 +2,15 @@ module Text.ConfigParser where
 
 import Prelude hiding ( lex, takeWhile )
 
-import Data.Char
-import Data.Text hiding ( replace, takeWhile )
-import Data.Attoparsec.Text hiding ( skip )
-import Data.Attoparsec.Combinator
-import Data.Default
-import Control.Monad
+import Data.Char                  ( isSpace, isAlpha, isNumber, isPunctuation, isPrint )
+import Data.Text hiding           ( replace, takeWhile )
+import Data.Attoparsec.Text       ( Parser, parseOnly, satisfy, char, takeWhile1, asciiCI, skipSpace )
+import Data.Attoparsec.Combinator ( many' )
+import Data.Default               ( def )
+import Control.Monad              ( mplus, msum )
 
-import Data.LaTeX
-import Data.Config
+import Data.LaTeX                 ( LaTeXElement ( Macro, Environment ) )
+import Data.Config                ( Config (..), StopState (..), clean, conservative, busy, blacklist, whitelist )
 
 reconfigure :: Config -> Text -> Maybe Config
 reconfigure conf = either (const Nothing) Just . parseOnly (reconfiguration conf)
@@ -204,7 +204,7 @@ listItemMacro = lex (char '\\' >> fmap (cons '\\') macroName)
         isPrint' c  = isPrint c && not (isNumber c || isSpace c)
 
 listItemEnvironment :: Parser Text
-listItemEnvironment = lex (takeWhile isAlpha)
+listItemEnvironment = lex (takeWhile1 isAlpha)
 
 listItemSeparator :: Parser Char
 listItemSeparator = lex $ char ','

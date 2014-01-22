@@ -1,11 +1,11 @@
 module Text.TeXLaTeXParser where
 
-import Text.Parsec hiding ( satisfy )
-import Data.Text ( Text, empty, pack, unpack, intercalate )
-import Control.Monad
+import Text.Parsec    ( Parsec, SourcePos, parse, tokenPrim, many )
+import Data.Text      ( Text, empty, pack, unpack )
+import Control.Monad  ( mplus, msum )
 
-import qualified Data.TeX    as T
-import qualified Data.LaTeX  as L
+import qualified Data.TeX    as T ( TeX, TeXElement (..) )
+import qualified Data.LaTeX  as L ( LaTeX, LaTeXElement (..) )
 
 type Parser       = Parsec T.TeX ()
 type LaTeX        = L.LaTeX

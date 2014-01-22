@@ -17,7 +17,7 @@ import Data.Text              ( pack )
 import Data.Config            ( Config (..), conservative, busy, clean )
 import Text.ConfigParser      ( replaceMacro, searchList, isolateList, skipList, eosList )
 import SmallCaps              ( smallcaps )
-import qualified Text.ConfigParser as ConfigParser
+import qualified Text.ConfigParser as ConfigParser ( Style ( .. ) )
 
 -- main program
 

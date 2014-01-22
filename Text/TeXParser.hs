@@ -1,17 +1,15 @@
 module Text.TeXParser where
 
-import qualified  Data.Attoparsec.Text        as P
-import            Data.Attoparsec.Text              ( Parser )
-import            Data.Attoparsec.Combinator  as C
-import qualified  Data.Text                   as T
-import            Data.Text                         ( Text )
-import            Control.Monad
-import            Data.Char
+import Data.Attoparsec.Text       ( Parser, satisfy, char, takeWhile1, takeTill, endOfLine, isEndOfLine )
+import Data.Attoparsec.Combinator ( many', option )
+import Data.Text                  ( Text, singleton, cons, snoc )
+import Control.Monad              ( msum, mplus )
+import Data.Char                  ( isPrint, isNumber, isSpace, isLetter )
 
-import            Data.TeX
+import Data.TeX                   ( TeX, TeXElement (..) )
 
-tex :: P.Parser TeX
-tex = C.many' $ msum
+tex :: Parser TeX
+tex = many' $ msum
   [ printable
   , comment
   , macro
@@ -19,21 +17,21 @@ tex = C.many' $ msum
   ]
 
 printable :: Parser TeXElement
-printable = fmap Printable $ P.takeWhile1 printableChar
+printable = fmap Printable $ takeWhile1 printableChar
   where printableChar = not . flip elem "\\{}%"
 
 comment :: Parser TeXElement
 comment = fmap Comment $ do
   b <- commentChar
-  c <- P.takeTill P.isEndOfLine
-  C.option () P.endOfLine
-  return (T.cons b (T.snoc c '\n'))
+  c <- takeTill isEndOfLine
+  option () endOfLine
+  return (cons b (snoc c '\n'))
 
 macro :: Parser TeXElement
 macro = fmap Macro $ do
   b <- macroBegin
   n <- macroName
-  return (T.cons b n)
+  return (cons b n)
 
 block :: Parser TeXElement
 block = fmap Block $ do
@@ -43,29 +41,29 @@ block = fmap Block $ do
   return c
 
 commentChar :: Parser Char
-commentChar = P.char '%'
+commentChar = char '%'
 
 macroBegin :: Parser Char
-macroBegin = P.char '\\'
+macroBegin = char '\\'
 
 macroName :: Parser Text
 macroName = macroLabel `mplus` tt print'
 
 macroLabel :: Parser Text
-macroLabel = P.takeWhile1 isLabelLetter
+macroLabel = takeWhile1 isLabelLetter
 
 blockBegin :: Parser Char
-blockBegin = P.char '{'
+blockBegin = char '{'
 
 blockEnd :: Parser Char
-blockEnd = P.char '}'
+blockEnd = char '}'
 
 print' :: Parser Char
-print' = P.satisfy isPrint'
+print' = satisfy isPrint'
   where isPrint' c = isPrint c && not (isNumber c || isSpace c)
 
 tt :: Parser Char -> Parser Text
-tt = fmap T.singleton
+tt = fmap singleton
 
 isLabelLetter :: Char -> Bool
 isLabelLetter c = isLetter c || c == '@'
