@@ -15,7 +15,7 @@ import Data.Attoparsec.Text   ( parseOnly )
 import Data.Text              ( pack )
 
 import Data.Config            ( Config (..), conservative, busy, clean )
-import Text.ConfigParser      ( replaceMacro, searchList, isolateList, skipList, eosList )
+import Text.ConfigParser      ( replaceMacro, searchList, isolateList, skipList, unskipList, eosList )
 import SmallCaps              ( smallcaps )
 import qualified Text.ConfigParser as ConfigParser ( Style ( .. ) )
 
@@ -23,7 +23,7 @@ import qualified Text.ConfigParser as ConfigParser ( Style ( .. ) )
 
 progname = "lesscase"
 version = Version
-  { versionBranch = [0,1]
+  { versionBranch = [0,1,1]
   , versionTags   = ["pre"]
   }
 
@@ -64,6 +64,7 @@ data Flag
   | Search    String
   | Isolate   String
   | Skip      String
+  | Unskip    String
   | Eos       String
   | NoInline
   deriving (Eq, Show)
@@ -77,6 +78,7 @@ reconf = foldl fun where
   fun conf (Search s)   = parse searchList conf s
   fun conf (Isolate s)  = parse isolateList conf s
   fun conf (Skip s)     = parse skipList conf s
+  fun conf (Unskip s)   = parse unskipList conf s
   fun conf (Eos s)      = parse eosList conf s
   fun conf NoInline     = conf { inlineConfig = False }
   fun conf _            = conf
@@ -99,6 +101,7 @@ options =
   , Option ['s']  ["search"]    (ReqArg Search  "<list>")   "search list (default: \"+ document\")"
   , Option ['i']  ["isolate"]   (ReqArg Isolate "<list>")   "isolate list (default: \"+ \\footnote, \\marginpar\")"
   , Option ['S']  ["skip"]      (ReqArg Skip    "<list>")   "skip list (default: \"+ \\small\")"
+  , Option ['u']  ["unskip"]    (ReqArg Skip    "<list>")   "unskip list (default: \"+ \\tiny, \\large, ...\")"
   , Option ['e']  ["eos"]       (ReqArg Eos     "<list>")   "end-of-sentence list (default: \"+ \\par, \\section, ...\")"
   ]
 
@@ -155,6 +158,8 @@ usage = do
   putStrLn    " % smallcaps skip <options as in search>"
   putStrLn    "    skip the following contents until the macro argument"
   putStrLn    "    or the environment ends"
+  putStrLn    " % smallcaps unskip <options as in search>"
+  putStrLn    "    undo skip"
   putStrLn    " % smallcaps eos <options as in search>"
   putStrLn    "    starts a new sentence after the macro or environemt"
   putStrLn    ""

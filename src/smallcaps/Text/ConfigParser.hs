@@ -24,6 +24,7 @@ reconfiguration conf = preamble >> msum
   , searchMain  conf
   , isolateMain conf
   , skipMain    conf
+  , unskipMain  conf
   , eosMain     conf
   ]
 
@@ -67,7 +68,6 @@ profileBusy = lex $ asciiCI (pack "busy") >> return busy
 startMain :: Config -> Parser Config
 startMain conf = startPre >> msum
   [ startSentence conf
-  , startSkip     conf
   , startNone     conf
   ]
 
@@ -76,9 +76,6 @@ startPre = lex (asciiCI (pack "isolation")) >> lex (asciiCI (pack "starts")) >> 
 
 startSentence :: Config -> Parser Config
 startSentence conf = lex (asciiCI (pack "new")) >> lex (asciiCI (pack "sentence")) >> return (conf { initState = NewSentence })
-
-startSkip :: Config -> Parser Config
-startSkip conf = lex (asciiCI (pack "out")) >> lex (asciiCI (pack "action")) >> return (conf { initState = Skip })
 
 startNone :: Config -> Parser Config
 startNone conf = lex (asciiCI (pack "in")) >> lex (asciiCI (pack "sentence")) >> return (conf { initState = None })
@@ -151,6 +148,17 @@ skipPre = lex $ asciiCI (pack "skip")
 
 skipList :: Config -> Parser Config
 skipList conf = list (skip conf) >>= \fun -> return $ conf { skip = fun }
+
+-- Unskip filter
+
+unskipMain :: Config -> Parser Config
+unskipMain = (unskipPre >>) . unskipList
+
+unskipPre :: Parser Text
+unskipPre = lex $ asciiCI (pack "unskip")
+
+unskipList :: Config -> Parser Config
+unskipList conf = list (unskip conf) >>= \fun -> return $ conf { unskip = fun }
 
 -- End of sentence filter
 

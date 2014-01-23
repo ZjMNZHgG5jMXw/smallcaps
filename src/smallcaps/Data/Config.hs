@@ -9,7 +9,6 @@ data StopState
   | NewLine
   | Stop
   | NewSentence
-  | Skip
   deriving (Show, Eq)
 
 instance Default StopState where
@@ -20,14 +19,16 @@ type SubParser a = ParserState -> a -> (a, ParserState)
 data ParserState = ParserState
   { config  :: Config
   , stop    :: StopState
+  , ignore  :: Bool       -- prev. Skip :: StopState
   }
 
-data Config = Config
+data Config = Config  -- TODO remove initState
   { initState     :: StopState              -- initial document parser state
   , periodChars   :: [Char]                 -- signs recognised as periods
   , search        :: LaTeXElement -> Bool   -- search block/macro/environment for caps
   , isolate       :: LaTeXElement -> Bool   -- open an isolated state for a block/macro/environment
   , skip          :: LaTeXElement -> Bool   -- skip searching for the rest of the block etc.
+  , unskip        :: LaTeXElement -> Bool   -- undo skip, e.g., at \normalsize when skipping \small
   , eos           :: LaTeXElement -> Bool   -- end of sentence, start with new one
   , replace       :: Text -> Text           -- formatting for small caps
   , inlineConfig  :: Bool                   -- dynamic reconfiguration in LaTeX comments
@@ -40,6 +41,7 @@ instance Default Config where
     , search        = defaultSearch
     , isolate       = defaultIsolate
     , skip          = defaultSkip
+    , unskip        = defaultUnskip
     , eos           = defaultEos
     , replace       = defaultReplace
     , inlineConfig  = True
@@ -55,7 +57,11 @@ defaultIsolate :: LaTeXElement -> Bool
 defaultIsolate = after ["\\footnote", "\\marginpar"]
 
 defaultSkip :: LaTeXElement -> Bool
-defaultSkip = after ["\\small"]
+defaultSkip = after [ "\\tiny", "\\scriptsize", "\\footnotesize", "\\small"
+                    , "\\large", "\\Large", "\\LARGE", "\\huge", "\\Huge"]
+
+defaultUnskip :: LaTeXElement -> Bool
+defaultUnskip = after ["\\normalsize"]
 
 defaultEos :: LaTeXElement -> Bool
 defaultEos = after
@@ -74,11 +80,12 @@ defaultReplace caps = pack "{\\small " `append` snoc caps '}'
 -- clean configuration, all substitutions off
 clean :: Config
 clean = Config
-  { initState     = Skip
+  { initState     = None
   , periodChars   = []
   , search        = const False
   , isolate       = const False
   , skip          = const False
+  , unskip        = const False
   , eos           = const False
   , replace       = id
   , inlineConfig  = True
@@ -86,15 +93,10 @@ clean = Config
 
 -- conservative configuration
 conservative :: Config
-conservative = Config
-  { initState     = def
-  , periodChars   = defaultPeriodChars
-  , search        = whitelist []
+conservative = def
+  { search        = whitelist []
   , isolate       = const False
-  , skip          = defaultSkip
   , eos           = after ["\\par"]
-  , replace       = defaultReplace
-  , inlineConfig  = True
   }
 
 -- busy configuration

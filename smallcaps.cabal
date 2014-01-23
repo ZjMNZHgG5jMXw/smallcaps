@@ -5,7 +5,7 @@ name:                smallcaps
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.1.0.0
+version:             0.1.1.0
 synopsis:            A library and a program for preceding capital letters in LaTeX files with \small
 -- description:         
 license:             BSD3

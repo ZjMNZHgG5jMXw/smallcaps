@@ -15,7 +15,7 @@ import            Text.ConfigParser     ( reconfigure )
 type Parser = L.Parser ParserState
 
 runDocument :: Config -> LaTeX -> LaTeX
-runDocument conf = fst . runDocumentWith (ParserState { config = conf, stop = initState conf })
+runDocument conf = fst . runDocumentWith (ParserState { config = conf, stop = initState conf, ignore = False })
 
 runDocumentWith :: SubParser LaTeX
 runDocumentWith state = either (error . show) id . runParser (stateAnd document) state ""
@@ -28,9 +28,9 @@ runSubDocument :: SubParser a -> a -> Parser a
 runSubDocument fun x = do
   state <- getState
   let (x', state') = fun state x
-  if stop state /= Skip && stop state' == Skip
-  then modifyState (\state -> state { stop = None }) -- replace Skip with None at the block end
-  else putState state'
+  if not (ignore state)
+  then putState (state' { ignore = False }) -- unskip at the block end
+  else putState  state'
   return x'
 
 isolateSubDocument :: SubParser a -> a -> Parser a
@@ -42,7 +42,7 @@ decideSub :: LaTeXElement -> SubParser a -> a -> Parser a
 decideSub element fun x = sub =<< fmap config getState where
   sub conf
     | isolate conf element  = isolateSubDocument fun x
-    | search  conf element  = runSubDocument fun x -- TODO unnecessary when user state == Skip
+    | search  conf element  = runSubDocument fun x
     | otherwise             = return x
 
 document :: Parser LaTeX
@@ -104,13 +104,14 @@ comment = do
 implySkip :: LaTeXElement -> Parser ()
 implySkip element = sub =<< fmap config getState where
   sub conf
-    | skip conf element = modifyState (\state -> state { stop = Skip })
-    | otherwise         = return ()
+    | skip conf element   = modifyState (\state -> state { ignore = True })
+    | unskip conf element = modifyState (\state -> state { ignore = False })
+    | otherwise           = return ()
 
 implyEos :: LaTeXElement -> Parser ()
 implyEos element = do
-  state <- getState
-  if stop state /= Skip && eos (config state) element
+  conf <- fmap config getState
+  if eos conf element
   then modifyState (\state -> state { stop = initState (config state) })
   else return ()
 

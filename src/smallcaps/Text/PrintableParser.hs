@@ -35,7 +35,7 @@ uppers :: Parser Text
 uppers = do
   text <- fmap pack $ many1 upper
   state <- getState
-  if stop state == Skip
+  if ignore state
   then return text
   else do
     let (h,t) = uc text (stop state)
@@ -56,11 +56,7 @@ misc :: Parser Text
 misc = fmap singleton $ anyChar >>= pass reset
 
 pass :: Parser b -> a -> Parser a
-pass m a = do
-  state <- getState
-  if stop state == Skip
-  then return a
-  else m >> return a
+pass m a = m >> return a
 
 reset :: Parser ()
 reset = modifyState (\state -> state { stop = None })
