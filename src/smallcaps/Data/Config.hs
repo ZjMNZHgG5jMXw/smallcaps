@@ -19,12 +19,18 @@ type SubParser a = ParserState -> a -> (a, ParserState)
 data ParserState = ParserState
   { config  :: Config
   , stop    :: StopState
-  , ignore  :: Bool       -- prev. Skip :: StopState
+  , ignore  :: Bool
   }
 
-data Config = Config  -- TODO remove initState
-  { initState     :: StopState              -- initial document parser state
-  , periodChars   :: [Char]                 -- signs recognised as periods
+instance Default ParserState where
+  def = ParserState
+    { config  = def
+    , stop    = def
+    , ignore  = False
+    }
+
+data Config = Config
+  { periodChars   :: [Char]                 -- signs recognised as periods
   , search        :: LaTeXElement -> Bool   -- search block/macro/environment for caps
   , isolate       :: LaTeXElement -> Bool   -- open an isolated state for a block/macro/environment
   , skip          :: LaTeXElement -> Bool   -- skip searching for the rest of the block etc.
@@ -36,8 +42,7 @@ data Config = Config  -- TODO remove initState
 
 instance Default Config where
   def = Config
-    { initState     = def
-    , periodChars   = defaultPeriodChars
+    { periodChars   = defaultPeriodChars
     , search        = defaultSearch
     , isolate       = defaultIsolate
     , skip          = defaultSkip
@@ -80,8 +85,7 @@ defaultReplace caps = pack "{\\small " `append` snoc caps '}'
 -- clean configuration, all substitutions off
 clean :: Config
 clean = Config
-  { initState     = None
-  , periodChars   = []
+  { periodChars   = []
   , search        = const False
   , isolate       = const False
   , skip          = const False

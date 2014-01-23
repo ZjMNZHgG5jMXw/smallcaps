@@ -15,7 +15,7 @@ import            Text.ConfigParser     ( reconfigure )
 type Parser = L.Parser ParserState
 
 runDocument :: Config -> LaTeX -> LaTeX
-runDocument conf = fst . runDocumentWith (ParserState { config = conf, stop = initState conf, ignore = False })
+runDocument conf = fst . runDocumentWith (def { config = conf })
 
 runDocumentWith :: SubParser LaTeX
 runDocumentWith state = either (error . show) id . runParser (stateAnd document) state ""
@@ -36,7 +36,7 @@ runSubDocument fun x = do
 isolateSubDocument :: SubParser a -> a -> Parser a
 isolateSubDocument fun x = do
   state <- getState
-  return $ fst $ fun (state { stop = initState (config state) }) x
+  return $ fst $ fun (state { stop = def }) x
 
 decideSub :: LaTeXElement -> SubParser a -> a -> Parser a
 decideSub element fun x = sub =<< fmap config getState where
@@ -112,7 +112,7 @@ implyEos :: LaTeXElement -> Parser ()
 implyEos element = do
   conf <- fmap config getState
   if eos conf element
-  then modifyState (\state -> state { stop = initState (config state) })
+  then modifyState (\state -> state { stop = def })
   else return ()
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

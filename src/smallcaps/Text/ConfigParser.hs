@@ -18,7 +18,6 @@ reconfigure conf = either (const Nothing) Just . parseOnly (reconfiguration conf
 reconfiguration :: Config -> Parser Config
 reconfiguration conf = preamble >> msum
   [ profileMain
-  , startMain   conf
   , periodMain  conf
   , replaceMain conf
   , searchMain  conf
@@ -62,23 +61,6 @@ profileConservative = lex $ asciiCI (pack "conservative") >> return conservative
 
 profileBusy :: Parser Config
 profileBusy = lex $ asciiCI (pack "busy") >> return busy
-
--- Initial stop state
-
-startMain :: Config -> Parser Config
-startMain conf = startPre >> msum
-  [ startSentence conf
-  , startNone     conf
-  ]
-
-startPre :: Parser Text
-startPre = lex (asciiCI (pack "isolation")) >> lex (asciiCI (pack "starts")) >> lex (asciiCI (pack "with"))
-
-startSentence :: Config -> Parser Config
-startSentence conf = lex (asciiCI (pack "new")) >> lex (asciiCI (pack "sentence")) >> return (conf { initState = NewSentence })
-
-startNone :: Config -> Parser Config
-startNone conf = lex (asciiCI (pack "in")) >> lex (asciiCI (pack "sentence")) >> return (conf { initState = None })
 
 -- Period chars
 
