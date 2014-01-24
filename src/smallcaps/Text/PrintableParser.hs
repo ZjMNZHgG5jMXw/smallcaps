@@ -36,7 +36,7 @@ uppers = do
   text <- fmap pack $ many1 upper
   state <- getState
   if ignore state
-  then return text
+  then return text >>= pass reset
   else do
     let (h,t) = uc text (stop state)
     pass reset $ h `append` replace' (config state) t
