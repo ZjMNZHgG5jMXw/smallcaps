@@ -1,7 +1,5 @@
 module Main where
 
-import Prelude        hiding  ( hGetContents, hPutStr )
-
 import System.IO              ( Handle, hClose, openFile, openTempFile, IOMode ( ReadMode ), stdin, stdout )
 import Data.Text.IO           ( hGetContents, hPutStr )
 import System.FilePath        ( takeDirectory, takeBaseName )
@@ -21,7 +19,10 @@ import qualified Text.ConfigParser as ConfigParser ( Style ( .. ) )
 
 -- main program
 
+progname :: String
 progname = "lesscase"
+
+version :: Version
 version = Version
   { versionBranch = [0,1,1,1]
   , versionTags   = ["pre"]
@@ -72,7 +73,7 @@ data Flag
 
 reconf :: Config -> [Flag] -> Config
 reconf = foldl fun where
-  fun conf (Profile s)  = chooseConf s
+  fun _    (Profile s)  = chooseConf s
   fun conf (Periods s)  = conf { periodChars = s }
   fun conf (BMacro s)   = parse (flip replaceMacro ConfigParser.NoArg) conf s
   fun conf (AMacro s)   = parse (flip replaceMacro ConfigParser.InArg) conf s
@@ -88,7 +89,7 @@ reconf = foldl fun where
     | s == "busy"         = busy
     | s == "clean"        = clean
     | otherwise           = def
-  parse fun conf = either (const conf) id . parseOnly (fun conf) . pack
+  parse p conf = either (const conf) id . parseOnly (p conf) . pack
 
 options :: [OptDescr Flag]
 options =
@@ -109,14 +110,14 @@ options =
 opts :: [String] -> IO ([Flag], [String])
 opts argv = do
   case getOpt Permute options argv of
-    (o,n,[])    -> return (o,n)
-    (_,_,errs)  -> usage >> exitFailure
+    (o,n,[])  -> return (o,n)
+    (_,_,_ )  -> usage >> exitFailure
 
 usage :: IO ()
 usage = do
   putVersion >> putStrLn ""
-  progname <- getProgName
-  putStrLn  $ "Usage: " ++ progname ++ " [options] [filename]\n"
+  pname     <- getProgName
+  putStrLn  $ "Usage: " ++ pname ++ " [options] [filename]\n"
   putStr      "Options:"
   putStr    $ usageInfo "" options
   putStrLn    "\nWithout filename, the program starts in filter mode.\n"

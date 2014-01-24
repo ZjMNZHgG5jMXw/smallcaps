@@ -12,6 +12,7 @@ data LaTeXElement
   | Comment Text            -- ^ comment starting with '%'
   deriving Show
 
+cc :: [Text] -> Text
 cc = intercalate (pack "")
 
 unlatex :: LaTeX -> Text

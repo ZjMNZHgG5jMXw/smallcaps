@@ -1,7 +1,7 @@
 module Text.LaTeXParser where
 
 import Text.Parsec  ( Parsec, SourcePos, tokenPrim )
-import Data.Text    ( Text, empty, pack, unpack, intercalate )
+import Data.Text    ( Text )
 
 import Data.LaTeX   ( LaTeX, LaTeXElement (..) )
 

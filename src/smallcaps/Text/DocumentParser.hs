@@ -1,14 +1,13 @@
 module Text.DocumentParser where
 
 import            Text.Parsec           ( runParser, getState, modifyState, putState, many )
-import            Data.Text             ( Text, empty, pack, unpack, intercalate )
 import            Control.Monad         ( msum )
 import            Data.Default          ( def )
 
 import            Data.LaTeX            ( LaTeX, LaTeXElement (..) )
 import qualified  Text.LaTeXParser as L ( Parser )
 import            Text.LaTeXParser      ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyComment )
-import            Data.Config           ( ParserState (..), Config (..), StopState (..), SubParser )
+import            Data.Config           ( ParserState (..), Config (..), SubParser )
 import            Text.PrintableParser  ( runPrintableWith )
 import            Text.ConfigParser     ( reconfigure )
 

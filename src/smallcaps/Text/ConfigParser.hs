@@ -10,7 +10,7 @@ import Data.Default               ( def )
 import Control.Monad              ( mplus, msum )
 
 import Data.LaTeX                 ( LaTeXElement ( Macro, Environment ) )
-import Data.Config                ( Config (..), StopState (..), clean, conservative, busy, blacklist, whitelist )
+import Data.Config                ( Config (..), clean, conservative, busy, blacklist, whitelist )
 
 reconfigure :: Config -> Text -> Maybe Config
 reconfigure conf = either (const Nothing) Just . parseOnly (reconfiguration conf)
@@ -94,8 +94,8 @@ replaceStyleInarg = lex (asciiCI (pack "as")) >> lex (asciiCI (pack "argument"))
 
 replaceMacro :: Config -> Style -> Parser Config
 replaceMacro conf style
-  | style == NoArg = fun (\macro caps -> pack "{\\" `append` macro `append` cons ' ' (snoc caps '}'))
-  | style == InArg = fun (\macro caps -> cons '\\' macro `append` cons '{' (snoc caps '}'))
+  | style == NoArg  = fun (\macro caps -> pack "{\\" `append` macro `append` cons ' ' (snoc caps '}'))
+  | otherwise       = fun (\macro caps -> cons '\\' macro `append` cons '{' (snoc caps '}'))
   where fun gun = lex $ char '\\' >> takeWhile1 isAlpha >>= \macro -> return $ conf { replace = gun macro }
 
 -- Search filter

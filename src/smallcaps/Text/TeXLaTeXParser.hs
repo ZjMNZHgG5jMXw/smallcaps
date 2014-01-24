@@ -49,8 +49,8 @@ updpos pos _ _ = pos
 macroTextArg :: Text -> Parser Text -- ^ compares the first printable to the text only
 macroTextArg name = do
   skipMacro name
-  (L.Block latex) <- anyBlock
-  case latex of
+  (L.Block latex') <- anyBlock
+  case latex' of
     (L.Printable text:_)  -> return text
     _                     -> return empty
 
@@ -63,10 +63,10 @@ endEnv = macroTextArg (pack "\\end")
 environment :: Parser LaTeXElement
 environment = do
   nameB <- beginEnv
-  latex <- many (environment `mplus` macroSatisfy (not . isEndEnv) `mplus` satisfy (not . isEndEnv))
+  latex' <- many (environment `mplus` macroSatisfy (not . isEndEnv) `mplus` satisfy (not . isEndEnv))
   nameE <- endEnv
   if nameB == nameE
-  then return (L.Environment nameB latex)
+  then return (L.Environment nameB latex')
   else fail ("\\end{" ++ unpack nameB ++ "} expected. found " ++ unpack nameE)
 
 isMacro :: T.TeXElement -> Bool
