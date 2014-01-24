@@ -14,11 +14,11 @@ import            Text.ConfigParser     ( reconfigure )
 
 type Parser = L.Parser ParserState
 
-runDocument :: Config -> LaTeX -> LaTeX
-runDocument conf = fst . runDocumentWith (def { config = conf })
+runDocument :: Config -> LaTeX -> Either String LaTeX
+runDocument conf = either (Left . show) (Right . fst) . runDocumentWith (def { config = conf })
 
 runDocumentWith :: SubParser LaTeX
-runDocumentWith state = either (error . show) id . runParser (stateAnd document) state ""
+runDocumentWith state = either (Left . show) Right . runParser (stateAnd document) state ""
   where stateAnd p = do
           a <- p
           s <- getState
@@ -27,7 +27,7 @@ runDocumentWith state = either (error . show) id . runParser (stateAnd document)
 runSubDocument :: SubParser a -> a -> Parser a 
 runSubDocument fun x = do
   state <- getState
-  let (x', state') = fun state x
+  (x', state') <- either fail return (fun state x)
   if not (ignore state)
   then putState (state' { ignore = False }) -- unskip at the block end
   else putState  state'
@@ -36,7 +36,7 @@ runSubDocument fun x = do
 isolateSubDocument :: SubParser a -> a -> Parser a
 isolateSubDocument fun x = do
   state <- getState
-  return $ fst $ fun (state { stop = def }) x
+  either fail (return . fst) $ fun (state { stop = def }) x
 
 decideSub :: LaTeXElement -> SubParser a -> a -> Parser a
 decideSub element fun x = sub =<< fmap config getState where

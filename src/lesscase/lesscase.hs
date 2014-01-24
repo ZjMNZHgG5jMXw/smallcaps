@@ -23,7 +23,7 @@ import qualified Text.ConfigParser as ConfigParser ( Style ( .. ) )
 
 progname = "lesscase"
 version = Version
-  { versionBranch = [0,1,1]
+  { versionBranch = [0,1,1,1]
   , versionTags   = ["pre"]
   }
 
@@ -38,7 +38,8 @@ run flags filenames
   | otherwise             = smallcapsFile (head filenames)  (reconf def flags)
 
 smallcapsHandle :: Handle -> Handle -> Config -> IO ()
-smallcapsHandle inp out conf = hPutStr out . smallcaps conf =<< hGetContents inp
+smallcapsHandle inp out conf = hPutStr out =<< runParser =<< hGetContents inp
+  where runParser = either fail return . smallcaps conf
 
 smallcapsPipe :: Config -> IO ()
 smallcapsPipe = smallcapsHandle stdin stdout

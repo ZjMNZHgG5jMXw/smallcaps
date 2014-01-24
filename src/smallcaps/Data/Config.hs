@@ -14,7 +14,7 @@ data StopState
 instance Default StopState where
   def = NewSentence
 
-type SubParser a = ParserState -> a -> (a, ParserState)
+type SubParser a = ParserState -> a -> Either String (a, ParserState)
 
 data ParserState = ParserState
   { config  :: Config

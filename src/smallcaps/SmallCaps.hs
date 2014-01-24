@@ -10,9 +10,10 @@ import Text.TeXParser       ( tex )
 import Text.TeXLaTeXParser  ( latex )
 import Text.DocumentParser  ( runDocument )
 
-smallcaps :: Config -> Text -> Text
-smallcaps conf = unlatex . runDocument conf . parseLaTeX . parseTeX where
-  parseTeX = either error id . parseOnly tex
-  parseLaTeX = either (error . show) id . parse latex ""
+smallcaps :: Config -> Text -> Either String Text
+smallcaps conf = fmap unlatex . parseDoc . parseLaTeX . parseTeX where
+  parseTeX    = parseOnly tex
+  parseLaTeX  = either Left (either (Left . show) Right . parse latex "")
+  parseDoc    = either Left (runDocument conf)
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

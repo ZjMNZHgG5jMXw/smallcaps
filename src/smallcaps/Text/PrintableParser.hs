@@ -13,7 +13,7 @@ import            Data.Config         ( Config (..), StopState (..), ParserState
 type Parser = GenParser ParserState
 
 runPrintableWith :: SubParser Text
-runPrintableWith state = either (error . show) id . runParser (printable >>= \a -> fmap ((,) a) getState) state ""
+runPrintableWith state = either (Left . show) Right . runParser (printable >>= \a -> fmap ((,) a) getState) state ""
 
 printable :: Parser Text
 printable = fmap (intercalate (pack "")) $ many $ printableElement
