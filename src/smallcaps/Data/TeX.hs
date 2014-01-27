@@ -9,6 +9,6 @@ data TeXElement
   | Macro Text
   | Block TeX
   | Comment Text
-  deriving Show
+  deriving (Eq, Show)
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

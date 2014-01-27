@@ -52,10 +52,32 @@ executable lesscase
   default-language:  Haskell2010
   ghc-options:       -Wall
 
-test-suite test-smallcaps
+test-suite texparser
   hs-source-dirs:    src/test
   type:              exitcode-stdio-1.0
-  main-is:           smallcaps.hs
+  main-is:           texparser.hs
+  build-depends:     base         >=4.6   && <4.7,
+                     text         >=0.11  && <0.12,
+                     attoparsec   >=0.10  && <0.11,
+                     smallcaps    >=0.1   && <0.2
+  default-language:  Haskell2010
+  ghc-options:       -Wall
+
+test-suite texlatexparser
+  hs-source-dirs:    src/test
+  type:              exitcode-stdio-1.0
+  main-is:           texlatexparser.hs
+  build-depends:     base         >=4.6   && <4.7,
+                     text         >=0.11  && <0.12,
+                     parsec       >=3.1   && <3.2,
+                     smallcaps    >=0.1   && <0.2
+  default-language:  Haskell2010
+  ghc-options:       -Wall
+
+test-suite configparser
+  hs-source-dirs:    src/test
+  type:              exitcode-stdio-1.0
+  main-is:           configparser.hs
   build-depends:     base         >=4.6   && <4.7,
                      text         >=0.11  && <0.12,
                      data-default >=0.5   && <0.6,

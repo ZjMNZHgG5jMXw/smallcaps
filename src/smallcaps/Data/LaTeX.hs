@@ -10,7 +10,7 @@ data LaTeXElement
   | Environment Text LaTeX  -- ^ environment name + content
   | Block LaTeX             -- ^ separate block
   | Comment Text            -- ^ comment starting with '%'
-  deriving Show
+  deriving (Eq, Show)
 
 cc :: [Text] -> Text
 cc = intercalate (pack "")
