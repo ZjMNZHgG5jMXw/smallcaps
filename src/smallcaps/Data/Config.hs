@@ -72,7 +72,7 @@ defaultEos :: LaTeXElement -> Bool
 defaultEos = after
   [ "\\par"
   , "\\part", "\\chapter", "\\section", "\\subsection", "\\subsubsection", "\\paragraph"
-  , "itemize", "enumerate", "describe"
+  , "itemize", "enumerate", "description"
   ]
 
 defaultReplace :: Text -> Text
