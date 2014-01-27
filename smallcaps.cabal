@@ -84,6 +84,17 @@ test-suite configparser
   default-language:  Haskell2010
   ghc-options:       -Wall
 
+test-suite printableparser
+  hs-source-dirs:    src/test
+  type:              exitcode-stdio-1.0
+  main-is:           printableparser.hs
+  build-depends:     base         >=4.6   && <4.7,
+                     text         >=0.11  && <0.12,
+                     data-default >=0.5   && <0.6,
+                     smallcaps    >=0.1   && <0.2
+  default-language:  Haskell2010
+  ghc-options:       -Wall
+
 source-repository head
   type:     git
   location: https://github.com/ZjMNZHgG5jMXw/smallcaps.git
