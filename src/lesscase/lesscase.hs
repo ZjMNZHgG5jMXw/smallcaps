@@ -24,7 +24,7 @@ progname = "lesscase"
 
 version :: Version
 version = Version
-  { versionBranch = [0,1,1,1]
+  { versionBranch = [0,1,1,2]
   , versionTags   = ["pre"]
   }
 
