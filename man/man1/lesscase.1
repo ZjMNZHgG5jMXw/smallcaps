@@ -1,0 +1,208 @@
+.TH "LESSCASE" "1" "January 28, 2014" "lesscase user manual" ""
+.SH NAME
+.PP
+lesscase \- a LaTeX pre\-processor for formatting uppercase letters
+.SH SYNOPSIS
+.PP
+lesscase [\f[I]options\f[]] [\f[I]file\f[]]
+.SH DESCRIPTION
+.PP
+lesscase is a pre\-processor for LaTeX files.
+It formats sequences of uppercase letters, e.g., ABC, with TeX\[aq]s
+\f[C]\\small\f[] macro, e.g., \f[C]{\\small\ ABC}\f[].
+Uppercase letters at the beginning of sentences are not formatted.
+The LaTeX macro can be chosen by the user as well as the formatting
+conditions.
+.PP
+lesscase can be configured through its command line arguments as well as
+through TeX comments.
+In the default configuration, lesscase does not change the content of
+any macro argument or environment (different from document).
+More (\f[C]conservative\f[]) and less restrictive configuration profiles
+(\f[C]busy\f[]) can be activated and adapted.
+The default configuration can be restored at any time, even while
+processing of the input file.
+.SH EXAMPLES
+.TP
+.B \f[C]lesscase\f[]
+Runs lesscase in filter mode.
+.RS
+.RE
+.TP
+.B \f[C]lesscase\ letter.tex\f[]
+Processes \f[C]letter.tex\f[] with all inline configurations and
+replaces the file with the program output.
+.RS
+.RE
+.TP
+.B \f[C]lesscase\ \-\-macro\-arg=\[aq]\\\\lesscase\[aq]\ letter.tex\f[]
+Processes \f[C]letter.tex\f[] as above, but uses the macro
+\f[C]\\lesscase\f[] instead of the default \f[C]\\small\f[] for
+formatting.
+The uppercase letters that are to be formatted are passed as argument to
+the macro.
+.RS
+.RE
+.TP
+.B \f[C]lesscase\ \-x\ ".!?:"\f[]
+lesscase uses the colon as the end of a sentence in addition to the
+period, the exclamation mark, and the question mark.
+Useful in German texts.
+.RS
+.RE
+.SH OPTIONS
+.TP
+.B \-\-no\-inline
+Ignore configuration statements embedded in the LaTeX source code.
+.RS
+.RE
+.TP
+.B \-p \f[I]name\f[], \-\-profile=\f[I]name\f[]
+Load a specific start configuration.
+Use \f[C]conservative\f[] to start with a very restrictive
+configuration.
+Use \f[C]busy\f[] to start with a configuration that enters all LaTeX
+macros and environment.
+Use \f[C]clean\f[] to switch off all functionality of lesscase.
+You can switch it on using inline configuration later in the LaTeX file.
+.RS
+.RE
+.TP
+.B \-x \f[I]chars\f[], \-\-periods=\f[I]chars\f[]
+Use a number of characters that mark the end of a sentence.
+\f[I]chars\f[] is a character string, no comma or other seperator is
+needed.
+(Default: "\f[C]\&.!?\f[]")
+.RS
+.RE
+.TP
+.B \-m \f[I]code\f[], \-\-macro=\f[I]code\f[]
+Use the macro \f[I]code\f[] for formatting uppercase letters.
+The macro \f[I]code\f[] will be put in its own LaTeX block, surrounded
+by a pair of \f[C]{}\f[]\-braces.
+(Default: "\f[C]\\small\f[]").
+.RS
+.RE
+.TP
+.B \-M \f[I]code\f[], \-\-macro\-arg=\f[I]code\f[]
+Similar to \f[C]\-m\f[], but passes the letters as argument to the macro
+\f[I]code\f[].
+.RS
+.RE
+.TP
+.B \-s \f[I]list\f[], \-\-search=\f[I]list\f[]
+A list of LaTeX macros and environments that will be processed by
+lesscase.
+If \f[I]list\f[] begins with \f[C]+\f[] or \f[C]\-\f[], the
+comma\-separated macros and environments will be added or removed from
+the internal search list, respectively.
+If \f[I]list\f[] begins with \f[C]*\f[] or \f[C]/\f[], the list is reset
+to all or none macros and environments, respectively.
+The \f[I]list\f[] has to start with one of the four operators.
+Macro names start with a backslash, environment names do not have any
+prefix.
+(Default: "\f[C]+\ document\f[]")
+.RS
+.RE
+.TP
+.B \-i \f[I]list\f[], \-\-isolate=\f[I]list\f[]
+A list of LaTeX macros and environments that will be processed
+separately from the rest of the text.
+The \f[I]list\f[] works as in \f[C]\-\-search\f[].
+(Default: "\f[C]+\ \\footnote,\ \\marginpar\f[]")
+.RS
+.RE
+.TP
+.B \-S \f[I]list\f[], \-\-skip=\f[I]list\f[]
+A list of LaTeX macros and environments that forces lesscase to ignore
+the rest of the LaTeX block.
+It can be used to avoid double processing of text.
+The \f[I]list\f[] works as in \f[C]\-\-search\f[].
+(Default:
+"\f[C]+\ \\tiny,\ \\scriptsize,\ \\footnotesize,\ \\small,\ \\large,\ \\Large,\ \\LARGE,\ \\huge,\ \\Huge\f[]")
+.RS
+.RE
+.TP
+.B \-u \f[I]list\f[], \-\-unskip=\f[I]list\f[]
+A list of LaTeX macros and environments that undo \f[C]\-\-skip\f[].
+The \f[I]list\f[] works as in \f[C]\-\-search\f[].
+(Default: "\f[C]+\ \\normalsize\f[]")
+.RS
+.RE
+.TP
+.B \-e \f[I]list\f[], \-\-eos=\f[I]list\f[]
+A list of LaTeX macros and environments that mark the end of a sentence.
+The \f[I]list\f[] works as in \f[C]\-\-search\f[].
+(Default:
+"\f[C]+\ \\par,\ \\part,\ \\chapter,\ \\section,\ \\subsection,\ \\subsubsection,\ \\paragraph,\ itemize,\ enumerate,\ description\f[]")
+.RS
+.RE
+.SH INLINE CONFIGURATION
+.PP
+The following LaTeX comments can be embedded into LaTeX source code and
+will reconfigure lesscase while it is parsing the LaTeX source.
+.TP
+.B \f[C]%\ smallcaps\ reset\ profile\f[] \f[I]name\f[]
+This comment loads a configuration profile as in the program option
+\f[C]\-\-profile\f[].
+Use the \f[C]default\f[] as \f[I]name\f[] to restore the default
+configuration.
+.RS
+.RE
+.TP
+.B \f[C]%\ smallcaps\ periods\ are\f[] \f[I]chars\f[]
+This comment sets the characters that would end a sentence, as in the
+program option \f[C]\-\-periods\f[].
+.RS
+.RE
+.TP
+.B \f[C]%\ smallcaps\ substitution\ in\ block\ with\f[] \f[I]macro\f[]
+This comment resets the formatting macro, as in the program options
+\f[C]\-\-macro\f[].
+.RS
+.RE
+.TP
+.B \f[C]%\ smallcaps\ substitution\ as\ argument\ of\f[] \f[I]macro\f[]
+This comment resets the formatting macro, as in the program options
+\f[C]\-\-macro\-arg\f[].
+.RS
+.RE
+.TP
+.B \f[C]%\ smallcaps\ search\f[] \f[I]list\f[]
+This comment modifies the search list.
+Use the \f[I]list\f[] as in the program option \f[C]\-\-search\f[].
+.RS
+.RE
+.TP
+.B \f[C]%\ smallcaps\ isolate\f[] \f[I]list\f[]
+This comment modifies the isolation list.
+Use the \f[I]list\f[] as in the program option \f[C]\-\-isolate\f[].
+.RS
+.RE
+.TP
+.B \f[C]%\ smallcaps\ skip\f[] \f[I]list\f[]
+This comment modifies the skip list.
+Use the \f[I]list\f[] as in the program option \f[C]\-\-skip\f[].
+.RS
+.RE
+.TP
+.B \f[C]%\ smallcaps\ unskip\f[] \f[I]list\f[]
+This comment modifies the unskip list.
+Use the \f[I]list\f[] as in the program option \f[C]\-\-unskip\f[].
+.RS
+.RE
+.TP
+.B \f[C]%\ smallcaps\ eos\f[] \f[I]list\f[]
+This comment modifies the end of sentence list.
+Use the \f[I]list\f[] as in the program option \f[C]\-\-eos\f[].
+.RS
+.RE
+.SH BUGS
+.PP
+lesscase is known to ignore the tab characters (&) in tabular
+environments.
+.PP
+lesscase does not know about the somewhat more flexible delimiters of
+verbatim macros (\f[C]\\verb\f[]).
+.SH AUTHORS
+Stefan Berthold <stefan.berthold@gmx.net>.

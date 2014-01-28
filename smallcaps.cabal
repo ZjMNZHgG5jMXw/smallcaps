@@ -14,9 +14,9 @@ author:              Stefan Berthold
 maintainer:          stefan.berthold@gmx.net
 category:            Text
 build-type:          Simple
--- Extra files to be distributed with the package, such as examples or a 
--- README.
--- extra-source-files:  
+extra-source-files:  src/test/Tests.hs
+                     doc/lesscase.markdown
+                     man/man1/lesscase.1
 cabal-version:       >=1.10
 
 library
