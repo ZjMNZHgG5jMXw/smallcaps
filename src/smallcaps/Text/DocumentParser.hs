@@ -14,7 +14,7 @@ import            Text.ConfigParser     ( reconfigure )
 type Parser = L.Parser ParserState
 
 runDocument :: Config -> LaTeX -> Either String LaTeX
-runDocument conf = either (Left . show) (Right . fst) . runDocumentWith (def { config = conf })
+runDocument conf = either Left (Right . fst) . runDocumentWith (def { config = conf })
 
 runDocumentWith :: SubParser LaTeX
 runDocumentWith state = either (Left . show) Right . runParser (stateAnd document) state ""

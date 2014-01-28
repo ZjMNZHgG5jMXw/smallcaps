@@ -37,7 +37,7 @@ checks =
   ]
 
 failed :: [(String, (ParserState, (Text, ParserState) -> Bool))] -> [String]
-failed = map (show . fst) . filter (\(s, (state, fun)) -> not (either (const False) fun (runPrintableWith state (pack s))))
+failed = map fst . filter (\(s, (state, fun)) -> not (either (const False) fun (runPrintableWith state (pack s))))
 
 checkOutStop :: String -> StopState -> (Text, ParserState) -> Bool
 checkOutStop s stopState (t, parserState) = (pack s) == t && stopState == stop parserState
