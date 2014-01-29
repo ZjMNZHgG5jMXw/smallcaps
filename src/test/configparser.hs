@@ -3,9 +3,10 @@ module Main where
 import System.Exit                        ( ExitCode )
 import Data.Text                          ( cons, pack, append )
 import qualified Data.Default as Default  ( def )
+import Data.Maybe                         ( isJust )
 
 import Data.LaTeX                         ( LaTeXElement (..) )
-import Data.Config                        ( ParserState (..), Config (..), clean )
+import Data.Config                        ( ParserState (..), Config (..), clean, isolateWith )
 import Text.ConfigParser                  ( reconfigure )
 
 import Tests                              ( failOn )
@@ -33,16 +34,14 @@ checks =
   , ("% SMALLCAPS SEARCH * abc\n",              checkBlackWhite search  [] [abc, def, ghi, jkl, mno, pqr])
   , ("% smallcaps search / abc\n",              checkBlackWhite search  [abc, def, ghi, jkl, mno, pqr] [])
   , ("% SMALLCAPS SEARCH / abc\n",              checkBlackWhite search  [abc, def, ghi, jkl, mno, pqr] [])
-  {-
-  , ("% smallcaps isolate + abc, \\def ghi\n",  checkBlackWhite isolate [ghi, jkl] [abc, def, mno, pqr])
-  , ("% SMALLCAPS ISOLATE + abc, \\def ghi\n",  checkBlackWhite isolate [ghi, jkl] [abc, def, mno, pqr])
-  , ("% smallcaps isolate - \\mno jkl\n",       checkBlackWhite isolate [abc, def, ghi, jkl, mno] [pqr])
-  , ("% SMALLCAPS ISOLATE - \\mno jkl\n",       checkBlackWhite isolate [abc, def, ghi, jkl, mno] [pqr])
-  , ("% smallcaps isolate * abc\n",             checkBlackWhite isolate [] [abc, def, ghi, jkl, mno, pqr])
-  , ("% SMALLCAPS ISOLATE * abc\n",             checkBlackWhite isolate [] [abc, def, ghi, jkl, mno, pqr])
-  , ("% smallcaps isolate / abc\n",             checkBlackWhite isolate [abc, def, ghi, jkl, mno, pqr] [])
-  , ("% SMALLCAPS ISOLATE / abc\n",             checkBlackWhite isolate [abc, def, ghi, jkl, mno, pqr] [])
-  -}
+  , ("% smallcaps isolate + abc, \\def ghi\n",  checkBlackWhite isolate'  [ghi, jkl] [abc, def, mno, pqr])
+  , ("% SMALLCAPS ISOLATE + abc, \\def ghi\n",  checkBlackWhite isolate'  [ghi, jkl] [abc, def, mno, pqr])
+  , ("% smallcaps isolate - \\mno jkl\n",       checkBlackWhite isolate'  [abc, def, ghi, jkl, mno] [pqr])
+  , ("% SMALLCAPS ISOLATE - \\mno jkl\n",       checkBlackWhite isolate'  [abc, def, ghi, jkl, mno] [pqr])
+  , ("% smallcaps isolate * abc\n",             checkBlackWhite isolate'  [] [abc, def, ghi, jkl, mno, pqr])
+  , ("% SMALLCAPS ISOLATE * abc\n",             checkBlackWhite isolate'  [] [abc, def, ghi, jkl, mno, pqr])
+  , ("% smallcaps isolate / abc\n",             checkBlackWhite isolate'  [abc, def, ghi, jkl, mno, pqr] [])
+  , ("% SMALLCAPS ISOLATE / abc\n",             checkBlackWhite isolate'  [abc, def, ghi, jkl, mno, pqr] [])
   , ("% smallcaps skip + abc, \\def ghi\n",     checkBlackWhite skip    [ghi, jkl] [abc, def, mno, pqr])
   , ("% SMALLCAPS SKIP + abc, \\def ghi\n",     checkBlackWhite skip    [ghi, jkl] [abc, def, mno, pqr])
   , ("% smallcaps skip - \\mno jkl\n",          checkBlackWhite skip    [abc, def, ghi, jkl, mno] [pqr])
@@ -67,7 +66,7 @@ checks =
   , ("% SMALLCAPS EOS * abc\n",                 checkBlackWhite eos     [] [abc, def, ghi, jkl, mno, pqr])
   , ("% smallcaps eos / abc\n",                 checkBlackWhite eos     [abc, def, ghi, jkl, mno, pqr] [])
   , ("% SMALLCAPS EOS / abc\n",                 checkBlackWhite eos     [abc, def, ghi, jkl, mno, pqr] [])
-  ]
+  ] where isolate' = (isJust .) . isolate
 
 failed :: [(String, Config -> Bool)] -> [String]
 failed = map (filter (/='\n') . fst) . filter (\(a,b) -> either (const True) (not . b) $ reconfigure teststate (pack a))
@@ -77,7 +76,7 @@ checkDefault conf
   =   checkBlackWhitePeriods ",:" ".!?" conf
   &&  checkSubstBlock "\\small" conf
   &&  checkBlackWhite search [Macro (pack "\\fun") []] [Environment (pack "document") [], Macro (pack "\\\\") []] conf
-  -- &&  checkBlackWhite isolate [Macro (pack "\\fun") []] [Macro (pack "\\footnote") [], Macro (pack "\\marginpar") []] conf
+  &&  checkBlackWhite ((isJust .) . isolate) [Macro (pack "\\fun") []] [Environment (pack "abstract") [], Macro (pack "\\footnote") [], Macro (pack "\\marginpar") []] conf
   &&  checkBlackWhite skip [Macro (pack "\\normalsize") []]
         [ Macro (pack "\\tiny") []
         , Macro (pack "\\scriptsize") []
@@ -131,7 +130,7 @@ teststate = Default.def { config = testconf }
 testconf :: Config
 testconf = clean
   { search  = def'
-  -- , isolate = def'
+  , isolate = isolateWith [("\\mno", "default"), ("pqr", "default")]
   , skip    = def'
   , unskip  = def'
   , eos     = def'

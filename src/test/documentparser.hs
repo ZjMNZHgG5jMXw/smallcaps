@@ -5,7 +5,7 @@ import Data.Text            ( pack )
 import Data.Default         ( def )
 
 import Data.LaTeX           ( LaTeX, LaTeXElement (..) )
-import Data.Config          ( Config (..), whitelist, after, clean )
+import Data.Config          ( Config (..), whitelist, after, isolateWith, clean )
 import Text.DocumentParser  ( runDocument )
 
 import Tests                ( failOn )
@@ -25,14 +25,12 @@ checks =
   , isChanging  testconf { search = whitelist ["fun"] }     (\a b -> [Environment (pack "fun") [a], b])
   , isChanging  testconf                                    (\a b -> [Block [a], b])
   , isChanging  testconf                                    (\a b -> [Comment (pack "%AB\n"), a, b])
-  {-
-  , isChanging  testconf { isolate = after [] }             (\a b -> [Macro (pack "\\fun") [Block [unchanged]], a, b])
-  , isChanging  testconf { isolate = after ["\\fun"] }      (\a b -> [Macro (pack "\\fun") [Block [a]], a, b])
-  , isChanging  testconf { isolate = after [] }             (\a b -> [Environment (pack "fun") [unchanged], a, b])
-  , isChanging  testconf { isolate = after ["fun"] }        (\a b -> [Environment (pack "fun") [a, b], a, b])
-  , isChanging  testconf { isolate = after [] }             (\a b -> [Block [a], b])
-  , isChanging  testconf { isolate = after [] }             (\a b -> [Comment (pack "%AB\n"), a, b])
-  -}
+  , isChanging  testconf { isolate = iso [] }               (\a b -> [Macro (pack "\\fun") [Block [unchanged]], a, b])
+  , isChanging  testconf { isolate = iso ["\\fun"] }        (\a b -> [Macro (pack "\\fun") [Block [a]], a, b])
+  , isChanging  testconf { isolate = iso [] }               (\a b -> [Environment (pack "fun") [unchanged], a, b])
+  , isChanging  testconf { isolate = iso ["fun"] }          (\a b -> [Environment (pack "fun") [a, b], a, b])
+  , isChanging  testconf { isolate = iso [] }               (\a b -> [Block [a], b])
+  , isChanging  testconf { isolate = iso [] }               (\a b -> [Comment (pack "%AB\n"), a, b])
   , isChanging  testconf { skip = after [] }                (\a b -> [Macro (pack "\\fun") [Block [unchanged]], a, b])
   , noChange    testconf { skip = after ["\\fun"] }         (\a b -> [Macro (pack "\\fun") [Block [unchanged]], a, b])
   , isChanging  testconf { skip = after [] }                (\a b -> [Environment (pack "fun") [unchanged], a, b])
@@ -49,7 +47,7 @@ checks =
   , isChanging  testconf { eos = after ["\\fun"] }          (\a b -> [a, Macro (pack "\\fun") [], a, b])
   , isChanging  testconf { eos = after [] }                 (\a b -> [a, Environment (pack "fun") [], b, b])
   , isChanging  testconf { eos = after ["fun"] }            (\a b -> [a, Environment (pack "fun") [], a, b])
-  ]
+  ] where iso = isolateWith . map (flip (,) "default")
 
 failed :: [Check] -> [String]
 failed = map (show . fst) . filter (\(a, (conf, b)) -> not (either (const False) (== b) (runDocument conf a)))
