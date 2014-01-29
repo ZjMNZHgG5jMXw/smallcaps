@@ -155,6 +155,8 @@ usage = do
   putStrLn    " % smallcaps isolate <options as in search>" 
   putStrLn    "    isolate the parser state within the macro arguments"
   putStrLn    "    or environment bodies"
+  putStrLn    "    write a profile name before '+' or '*' in order to"
+  putStrLn    "    use a specific profile for the isolation."
   putStrLn    " % smallcaps skip <options as in search>"
   putStrLn    "    skip the following contents until the macro argument"
   putStrLn    "    or the environment ends"

@@ -109,6 +109,7 @@ The following LaTeX comments can be embedded into LaTeX source code and will rec
 `% smallcaps isolate` *list*
 :   This comment modifies the isolation list.
     Use the *list* as in the program option `--isolate`.
+    In addition, you may add a profile name as a prefix for a "`+`" list or a "`*`". The isolated processing will start with this profile for the named macros and environments. If no profile name is given, "`default`" will be used.
 
 `% smallcaps skip` *list*
 :   This comment modifies the skip list.
