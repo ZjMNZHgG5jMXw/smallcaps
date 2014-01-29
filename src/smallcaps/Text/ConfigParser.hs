@@ -2,16 +2,17 @@ module Text.ConfigParser where
 
 import Prelude hiding ( lex, takeWhile )
 
-import Data.Char                  ( isSpace, isAlpha, isNumber, isAlphaNum, isPunctuation, isPrint )
+import Data.Char                  ( isAlpha, isAlphaNum, isPunctuation )
 import Data.Text hiding           ( replace, takeWhile )
 import Data.Map                   ( Map )
 import qualified Data.Map as Map  ( lookup )
-import Data.Attoparsec.Text       ( Parser, parseOnly, satisfy, char, takeWhile1, asciiCI, skipSpace )
+import Data.Attoparsec.Text       ( Parser, parseOnly, char, takeWhile1, asciiCI, skipSpace )
 import Data.Attoparsec.Combinator ( many' )
 import Control.Monad              ( mplus, msum )
 
-import Data.LaTeX                 ( LaTeXElement ( Macro, Environment ) )
+import Data.LaTeX                 ( LaTeXElement, name )
 import Data.Config                ( ParserState (..), Config (..), blacklist, whitelist )
+import Text.TeXParser             ( macroBegin, macroName )
 
 reconfigure :: ParserState -> Text -> Either (Text, Config) Config
 reconfigure state = either (const (Right (config state))) id . parseOnly (reconfiguration state)
@@ -95,7 +96,7 @@ replaceMacro :: Config -> Style -> Parser Config
 replaceMacro conf style
   | style == NoArg  = fun (\macro caps -> pack "{\\" `append` macro `append` cons ' ' (snoc caps '}'))
   | otherwise       = fun (\macro caps -> cons '\\' macro `append` cons '{' (snoc caps '}'))
-  where fun gun = lex $ char '\\' >> takeWhile1 isAlpha >>= \macro -> return $ conf { replace = gun macro }
+  where fun gun = lex $ macroBegin >> macroName >>= \macro -> return $ conf { replace = gun macro }
 
 -- Search filter
 
@@ -223,20 +224,13 @@ listItem :: Parser Text
 listItem = listItemMacro `mplus` listItemEnvironment
 
 listItemMacro :: Parser Text
-listItemMacro = lex (char '\\' >> fmap (cons '\\') macroName)
-  where macroName   = takeWhile1 isAlpha `mplus` fmap singleton (satisfy isPrint')
-        isPrint' c  = isPrint c && not (isNumber c || isSpace c)
+listItemMacro = lex (macroBegin >> fmap (cons '\\') macroName)
 
 listItemEnvironment :: Parser Text
 listItemEnvironment = lex (takeWhile1 isAlpha)
 
 listItemSeparator :: Parser Char
 listItemSeparator = lex $ char ','
-
-name :: LaTeXElement -> Text
-name (Macro n _)        = n
-name (Environment n _)  = n
-name _                  = empty
 
 isElement :: LaTeXElement -> [Text] -> Bool
 isElement = elem . name

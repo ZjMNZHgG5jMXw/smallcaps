@@ -5,7 +5,7 @@ import            Control.Monad         ( msum )
 import            Data.Default          ( def )
 import qualified  Data.Map       as Map ( insert, lookup )
 
-import            Data.LaTeX            ( LaTeX, LaTeXElement (..) )
+import            Data.LaTeX            ( LaTeX, LaTeXElement (..), name, body, content )
 import qualified  Text.LaTeXParser as L ( Parser )
 import            Text.LaTeXParser      ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyComment )
 import            Data.Config           ( ParserState (..), Config (..), SubParser )
@@ -62,47 +62,46 @@ documentElement = msum
 
 printable :: Parser LaTeXElement
 printable = do
-  x@(Printable text) <- anyPrintable
+  x <- anyPrintable
   implySkip x
-  text' <- decideSub x runPrintableWith text
+  text <- decideSub x runPrintableWith (content x)
   implyEos x
-  return $ Printable text'
+  return $ Printable text
 
 macro :: Parser LaTeXElement
 macro = do
-  x@(Macro name latex) <- anyMacro
+  x <- anyMacro
   implySkip x
-  latex' <- decideSub x runDocumentWith latex
+  latex <- decideSub x runDocumentWith (body x)
   implyEos x
-  return $ Macro name latex'
+  return $ Macro (name x) latex
 
 environment :: Parser LaTeXElement
 environment = do
-  x@(Environment name latex) <- anyEnvironment
+  x <- anyEnvironment
   implySkip x
-  latex' <- decideSub x runDocumentWith latex
+  latex <- decideSub x runDocumentWith (body x)
   implyEos x
-  return $ Environment name latex'
+  return $ Environment (name x) latex
 
 block :: Parser LaTeXElement
 block = do
-  x@(Block latex) <- anyBlock
+  x <- anyBlock
   implySkip x
-  latex' <- decideSub x runDocumentWith latex
+  latex <- decideSub x runDocumentWith (body x)
   implyEos x
-  return $ Block latex'
+  return $ Block latex
 
 comment :: Parser LaTeXElement
 comment = do
   x <- anyComment
   implySkip x
   implyEos x
-  let (Comment text) = x
   state <- getState
   if inlineConfig (config state)
   then either
     (\(n,c) -> modifyState (\s -> s { profile = Map.insert n c (profile s) }))
-    (\c     -> modifyState (\s -> s { config = c })) $ reconfigure state text
+    (\c     -> modifyState (\s -> s { config = c })) $ reconfigure state (content x)
   else return ()
   return x
 

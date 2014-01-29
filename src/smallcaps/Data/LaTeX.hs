@@ -1,6 +1,6 @@
 module Data.LaTeX where
 
-import Data.Text ( Text, singleton, pack, intercalate )
+import Data.Text ( Text, empty, singleton, pack, intercalate )
 
 type LaTeX = [LaTeXElement]
 
@@ -12,6 +12,42 @@ data LaTeXElement
   | Comment Text            -- ^ comment starting with '%'
   deriving (Eq, Show)
 
+isPrintable :: LaTeXElement -> Bool
+isPrintable (Printable _) = True
+isPrintable _             = False
+
+isMacro :: LaTeXElement -> Bool
+isMacro (Macro _ _) = True
+isMacro _           = False
+
+isEnvironment :: LaTeXElement -> Bool
+isEnvironment (Environment _ _) = True
+isEnvironment _                 = False
+
+isBlock :: LaTeXElement -> Bool
+isBlock (Block _) = True
+isBlock _         = False
+
+isComment :: LaTeXElement -> Bool
+isComment (Comment _) = True
+isComment _           = False
+
+name :: LaTeXElement -> Text
+name (Macro n _)        = n
+name (Environment n _)  = n
+name _                  = empty
+
+content :: LaTeXElement -> Text
+content (Printable text)  = text
+content (Comment text)    = text
+content _                 = empty
+
+body :: LaTeXElement -> LaTeX
+body (Macro _ latex)        = latex
+body (Environment _ latex)  = latex
+body (Block latex)          = latex
+body _                      = []
+
 cc :: [Text] -> Text
 cc = intercalate (pack "")
 
@@ -20,11 +56,11 @@ unlatex = cc . map unlatexElement
 
 unlatexElement :: LaTeXElement -> Text
 unlatexElement (Printable text) = text
-unlatexElement (Macro name latex) = cc [name, unlatex latex]
-unlatexElement (Environment name latex) = cc
-  [ pack "\\begin{", name, singleton '}'
+unlatexElement (Macro name' latex) = cc [name', unlatex latex]
+unlatexElement (Environment name' latex) = cc
+  [ pack "\\begin{", name', singleton '}'
   , unlatex latex
-  , pack "\\end{", name, singleton '}'
+  , pack "\\end{", name', singleton '}'
   ]
 unlatexElement (Block latex) = cc
   [ singleton '{'

@@ -1,9 +1,13 @@
 module Text.LaTeXParser where
 
-import Text.Parsec  ( Parsec, SourcePos, tokenPrim )
-import Data.Text    ( Text )
+import Text.Parsec    ( Parsec, SourcePos, tokenPrim )
+import Data.Text      ( Text )
+import Control.Monad  ( liftM2 )
 
-import Data.LaTeX   ( LaTeX, LaTeXElement (..) )
+import Data.LaTeX     ( LaTeX, LaTeXElement
+                      , isMacro, isEnvironment, isBlock, isPrintable, isComment
+                      , name, content
+                      )
 
 type Parser u = Parsec LaTeX u
 
@@ -16,25 +20,19 @@ anyPrintable :: Parser u LaTeXElement
 anyPrintable = satisfy isPrintable
 
 printable :: Text -> Parser u LaTeXElement
-printable text = tokenPrim show updpos get where
-  get x@(Printable text') | text == text' = Just x
-  get _                                   = Nothing
+printable text = satisfy (liftM2 (&&) isPrintable ((text ==) . content))
 
 anyMacro :: Parser u LaTeXElement
 anyMacro = satisfy isMacro
 
 macro :: Text -> Parser u LaTeXElement
-macro name = tokenPrim show updpos get where
-  get x@(Macro name' _) | name == name' = Just x
-  get _                                 = Nothing
+macro n = satisfy (liftM2 (&&) isMacro ((n ==) . name))
 
 anyEnvironment :: Parser u LaTeXElement
 anyEnvironment = satisfy isEnvironment
 
 environment :: Text -> Parser u LaTeXElement
-environment name = tokenPrim show updpos get where
-  get x@(Environment name' _) | name == name' = Just x
-  get _                                       = Nothing
+environment n = satisfy (liftM2 (&&) isEnvironment ((n ==) . name))
 
 anyBlock :: Parser u LaTeXElement
 anyBlock = satisfy isBlock
@@ -44,25 +42,5 @@ anyComment = satisfy isComment
 
 updpos :: SourcePos -> t -> s -> SourcePos
 updpos pos _ _ = pos
-
-isPrintable :: LaTeXElement -> Bool
-isPrintable (Printable _) = True
-isPrintable _             = False
-
-isMacro :: LaTeXElement -> Bool
-isMacro (Macro _ _) = True
-isMacro _           = False
-
-isEnvironment :: LaTeXElement -> Bool
-isEnvironment (Environment _ _) = True
-isEnvironment _                 = False
-
-isBlock :: LaTeXElement -> Bool
-isBlock (Block _) = True
-isBlock _         = False
-
-isComment :: LaTeXElement -> Bool
-isComment (Comment _) = True
-isComment _           = False
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

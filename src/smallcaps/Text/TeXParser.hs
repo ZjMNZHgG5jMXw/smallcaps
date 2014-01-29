@@ -4,9 +4,8 @@ import Data.Attoparsec.Text       ( Parser, satisfy, char, takeWhile1, takeTill,
 import Data.Attoparsec.Combinator ( many', option )
 import Data.Text                  ( Text, singleton, cons, snoc )
 import Control.Monad              ( msum, mplus )
-import Data.Char                  ( isPrint, isNumber, isSpace, isLetter )
 
-import Data.TeX                   ( TeX, TeXElement (..) )
+import Data.TeX                   ( TeX, TeXElement (..), isMacroLetter, isMacroSign )
 
 tex :: Parser TeX
 tex = many' $ msum
@@ -47,10 +46,10 @@ macroBegin :: Parser Char
 macroBegin = char '\\'
 
 macroName :: Parser Text
-macroName = macroLabel `mplus` tt print'
+macroName = macroLabel `mplus` tt macroSign
 
 macroLabel :: Parser Text
-macroLabel = takeWhile1 isLabelLetter
+macroLabel = takeWhile1 isMacroLetter
 
 blockBegin :: Parser Char
 blockBegin = char '{'
@@ -58,14 +57,10 @@ blockBegin = char '{'
 blockEnd :: Parser Char
 blockEnd = char '}'
 
-print' :: Parser Char
-print' = satisfy isPrint'
-  where isPrint' c = isPrint c && not (isNumber c || isSpace c)
+macroSign :: Parser Char
+macroSign = satisfy isMacroSign
 
 tt :: Parser Char -> Parser Text
 tt = fmap singleton
-
-isLabelLetter :: Char -> Bool
-isLabelLetter c = isLetter c || c == '@'
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

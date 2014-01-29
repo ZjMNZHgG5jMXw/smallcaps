@@ -4,7 +4,12 @@ import            Data.Default    ( Default, def )
 import            Data.Text       ( Text, pack, snoc, append )
 import            Data.Map        ( Map )
 import qualified  Data.Map as Map ( fromList )
-import            Data.LaTeX      ( LaTeXElement (..) )
+import            Control.Monad   ( liftM2 )
+
+import            Data.LaTeX      ( LaTeXElement
+                                  , isPrintable, isMacro, isEnvironment, isBlock, isComment
+                                  , name
+                                  )
 
 data StopState
   = None
@@ -131,27 +136,22 @@ small = def
   }
 
 whitelist :: [String] -> LaTeXElement -> Bool
-whitelist _     (Printable _)     = True
-whitelist _     (Block _)         = True
-whitelist names latex             = after names latex
+whitelist names = liftM2 (||) (liftM2 (||) isPrintable isBlock) (after names)
 
 blacklist :: [String] -> LaTeXElement -> Bool
-blacklist _     (Comment _)       = False
-blacklist names latex             = not $ after names latex
+blacklist names = not . liftM2 (||) isComment (after names)
 
 after :: [String] -> LaTeXElement -> Bool
-after names (Macro name _)        = name `elem` map pack names
-after names (Environment name _)  = name `elem` map pack names
-after _ _                         = False
+after names = liftM2 (&&) (liftM2 (||) isMacro isEnvironment) (flip elem (map pack names) . name)
 
 isolateWith :: [(String, String)] -> LaTeXElement -> Maybe Text
-isolateWith names (Macro        name _) = findConfigName name names
-isolateWith names (Environment  name _) = findConfigName name names
-isolateWith _     _                     = Nothing
+isolateWith names x
+  | isMacro x || isEnvironment x  = findConfigName (name x) names
+  | otherwise                     = Nothing
 
 findConfigName :: Text -> [(String, String)] -> Maybe Text
-findConfigName name = foldr fun Nothing
-  where fun (n,c) Nothing | pack n == name  = Just (pack c)
+findConfigName name' = foldr fun Nothing
+  where fun (n,c) Nothing | pack n == name' = Just (pack c)
                           | otherwise       = Nothing
         fun _     x                         = x
 

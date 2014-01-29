@@ -2,14 +2,16 @@ module Text.TeXLaTeXParser where
 
 import Text.Parsec    ( Parsec, SourcePos, parse, tokenPrim, many )
 import Data.Text      ( Text, empty, pack, unpack )
-import Control.Monad  ( mplus, msum )
+import Control.Monad  ( liftM2, mplus, msum )
 
-import qualified Data.TeX    as T ( TeX, TeXElement (..) )
-import qualified Data.LaTeX  as L ( LaTeX, LaTeXElement (..) )
+import qualified Data.TeX    as T ( TeX, TeXElement
+                                  , isPrintable, isMacro, isBlock, isComment
+                                  , content, body
+                                  )
+import qualified Data.LaTeX  as L ( LaTeXElement (..) )
+import           Data.LaTeX       ( LaTeX, LaTeXElement )
 
 type Parser       = Parsec T.TeX ()
-type LaTeX        = L.LaTeX
-type LaTeXElement = L.LaTeXElement
 
 latex :: Parser LaTeX
 latex = many $ msum
@@ -23,30 +25,28 @@ latexElement = satisfy (const True)
 
 satisfy :: (T.TeXElement -> Bool) -> Parser LaTeXElement
 satisfy pass = tokenPrim show updpos get where
-  get x@(T.Printable text)  | pass x  = Just $ L.Printable text
-  get x@(T.Macro text)      | pass x  = Just $ L.Macro text [] -- use macro instead!
-  get x@(T.Block tex)       | pass x  = Just $ L.Block $ either (const []) id $ parse latex "" tex
-  get x@(T.Comment text)    | pass x  = Just $ L.Comment text
-  get _                               = Nothing
+  get x | T.isPrintable x && pass x = Just $ L.Printable  (T.content x)
+        | T.isMacro x     && pass x = Just $ L.Macro      (T.content x) [] -- use macro instead!
+        | T.isBlock x     && pass x = Just $ L.Block $ either (const []) id $ parse latex "" (T.body x)
+        | T.isComment x   && pass x = Just $ L.Comment    (T.content x)
+        | otherwise                 = Nothing
 
-skipMacro :: Text -> Parser ()
-skipMacro name = tokenPrim show updpos get where
-  get (T.Macro name') | name == name' = Just ()
-  get _                               = Nothing
+skipMacro :: Text -> Parser LaTeXElement
+skipMacro name = satisfy (liftM2 (&&) T.isMacro ((name ==) . T.content))
 
 macroSatisfy :: (T.TeXElement -> Bool) -> Parser LaTeXElement
-macroSatisfy cond = satisfy (\x -> isMacro x && cond x) >>= \(L.Macro name _) -> fmap (L.Macro name) (many anyBlock)
+macroSatisfy cond = satisfy (liftM2 (&&) T.isMacro cond) >>= \(L.Macro name _) -> fmap (L.Macro name) (many anyBlock)
 
 macro :: Parser LaTeXElement
 macro = macroSatisfy (const True)
 
 anyBlock :: Parser LaTeXElement
-anyBlock = satisfy isBlock
+anyBlock = satisfy T.isBlock
 
 updpos :: SourcePos -> t -> s -> SourcePos
 updpos pos _ _ = pos
 
-macroTextArg :: Text -> Parser Text -- ^ compares the first printable to the text only
+macroTextArg :: Text -> Parser Text -- ^ matches macro name and returns the first printable to the text only
 macroTextArg name = do
   skipMacro name
   (L.Block latex') <- anyBlock
@@ -69,16 +69,7 @@ environment = do
   then return (L.Environment nameB latex')
   else fail ("\\end{" ++ unpack nameB ++ "} expected. found " ++ unpack nameE)
 
-isMacro :: T.TeXElement -> Bool
-isMacro (T.Macro _) = True
-isMacro _           = False
-
-isBlock :: T.TeXElement -> Bool
-isBlock (T.Block _) = True
-isBlock _           = False
-
 isEndEnv :: T.TeXElement -> Bool
-isEndEnv (T.Macro name) = name == pack "\\end"
-isEndEnv _              = False
+isEndEnv x = T.isMacro x && T.content x == pack "\\end"
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai
