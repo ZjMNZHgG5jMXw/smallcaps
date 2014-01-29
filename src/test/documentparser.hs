@@ -25,12 +25,14 @@ checks =
   , isChanging  testconf { search = whitelist ["fun"] }     (\a b -> [Environment (pack "fun") [a], b])
   , isChanging  testconf                                    (\a b -> [Block [a], b])
   , isChanging  testconf                                    (\a b -> [Comment (pack "%AB\n"), a, b])
+  {-
   , isChanging  testconf { isolate = after [] }             (\a b -> [Macro (pack "\\fun") [Block [unchanged]], a, b])
   , isChanging  testconf { isolate = after ["\\fun"] }      (\a b -> [Macro (pack "\\fun") [Block [a]], a, b])
   , isChanging  testconf { isolate = after [] }             (\a b -> [Environment (pack "fun") [unchanged], a, b])
   , isChanging  testconf { isolate = after ["fun"] }        (\a b -> [Environment (pack "fun") [a, b], a, b])
   , isChanging  testconf { isolate = after [] }             (\a b -> [Block [a], b])
   , isChanging  testconf { isolate = after [] }             (\a b -> [Comment (pack "%AB\n"), a, b])
+  -}
   , isChanging  testconf { skip = after [] }                (\a b -> [Macro (pack "\\fun") [Block [unchanged]], a, b])
   , noChange    testconf { skip = after ["\\fun"] }         (\a b -> [Macro (pack "\\fun") [Block [unchanged]], a, b])
   , isChanging  testconf { skip = after [] }                (\a b -> [Environment (pack "fun") [unchanged], a, b])

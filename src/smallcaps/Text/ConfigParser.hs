@@ -117,7 +117,7 @@ isolatePre :: Parser Text
 isolatePre = lex $ asciiCI (pack "isolate")
 
 isolateList :: Config -> Parser Config
-isolateList conf = list (isolate conf) >>= \fun -> return $ conf { isolate = fun }
+isolateList conf = iList (isolate conf) >>= \fun -> return $ conf { isolate = fun }
 
 -- Skip filter
 
@@ -178,6 +178,41 @@ listConstNone = lex (char '/') >> return (const False)
 listConstNone' :: Parser (LaTeXElement -> Bool)
 listConstNone' = lex (char '/') >> return (whitelist [])
 
+-- Isolate list parser
+
+iList :: (LaTeXElement -> Maybe Text) -> Parser (LaTeXElement -> Maybe Text)
+iList fun = msum [iListBlack fun, iListWhite fun, iListConstAll, iListConstNone]
+
+iListBlack :: (LaTeXElement -> Maybe Text) -> Parser (LaTeXElement -> Maybe Text)
+iListBlack fun = do
+  lex $ char '-'
+  xs <- listItems
+  return $ \x ->  if x `isElement` xs
+                  then Nothing
+                  else fun x
+
+iListWhite :: (LaTeXElement -> Maybe Text) -> Parser (LaTeXElement -> Maybe Text)
+iListWhite fun = do
+  c   <- lex $ takeWhile1 isAlphaNum
+  lex $ char '+'
+  xs  <- listItems
+  return $ \x ->  if x `isElement` xs
+                  then Just c
+                  else fun x
+
+iListConstAll :: Parser (LaTeXElement -> Maybe Text)
+iListConstAll = do
+  c   <- lex $ takeWhile1 isAlphaNum
+  lex $ char '*' 
+  return $ const (Just c)
+
+iListConstNone :: Parser (LaTeXElement -> Maybe Text)
+iListConstNone = do
+  lex $ char '/'
+  return $ const Nothing
+
+-- list item parser
+
 listItems :: Parser [Text]
 listItems = do
   x <- listItem
@@ -202,5 +237,8 @@ name :: LaTeXElement -> Text
 name (Macro n _)        = n
 name (Environment n _)  = n
 name _                  = empty
+
+isElement :: LaTeXElement -> [Text] -> Bool
+isElement = elem . name
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

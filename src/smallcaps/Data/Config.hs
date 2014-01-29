@@ -32,20 +32,21 @@ instance Default ParserState where
                               , (pack "clean",        clean)
                               , (pack "conservative", conservative)
                               , (pack "busy",         busy)
+                              , (pack "small",        small)
                               ]
     , stop    = def
     , ignore  = False
     }
 
 data Config = Config
-  { periodChars   :: [Char]                 -- signs recognised as periods
-  , search        :: LaTeXElement -> Bool   -- search block/macro/environment for caps
-  , isolate       :: LaTeXElement -> Bool   -- open an isolated state for a block/macro/environment
-  , skip          :: LaTeXElement -> Bool   -- skip searching for the rest of the block etc.
-  , unskip        :: LaTeXElement -> Bool   -- undo skip, e.g., at \normalsize when skipping \small
-  , eos           :: LaTeXElement -> Bool   -- end of sentence, start with new one
-  , replace       :: Text -> Text           -- formatting for small caps
-  , inlineConfig  :: Bool                   -- dynamic reconfiguration in LaTeX comments
+  { periodChars   :: [Char]                     -- signs recognised as periods
+  , search        :: LaTeXElement -> Bool       -- search block/macro/environment for caps
+  , isolate       :: LaTeXElement -> Maybe Text -- open an isolated state for a block/macro/environment; returns config name
+  , skip          :: LaTeXElement -> Bool       -- skip searching for the rest of the block etc.
+  , unskip        :: LaTeXElement -> Bool       -- undo skip, e.g., at \normalsize when skipping \small
+  , eos           :: LaTeXElement -> Bool       -- end of sentence, start with new one
+  , replace       :: Text -> Text               -- formatting for small caps
+  , inlineConfig  :: Bool                       -- dynamic reconfiguration in LaTeX comments
   }
 
 instance Default Config where
@@ -66,8 +67,11 @@ defaultPeriodChars = ".!?"
 defaultSearch :: LaTeXElement -> Bool
 defaultSearch = whitelist ["document", "\\\\"]
 
-defaultIsolate :: LaTeXElement -> Bool
-defaultIsolate = after ["\\footnote", "\\marginpar"]
+defaultIsolate :: LaTeXElement -> Maybe Text
+defaultIsolate = isolateWith  [ ("abstract",    "small")
+                              , ("\\footnote",  "small")
+                              , ("\\marginpar", "default")
+                              ]
 
 defaultSkip :: LaTeXElement -> Bool
 defaultSkip = after [ "\\tiny", "\\scriptsize", "\\footnotesize", "\\small"
@@ -87,6 +91,9 @@ defaultReplace :: Text -> Text
 defaultReplace caps = pack "{\\small " `append` snoc caps '}'
 
 -- combinator for plugin construction
+(&&&) :: (LaTeXElement -> Bool) -> (LaTeXElement -> Bool) -> LaTeXElement -> Bool
+(&&&) fun gun element = fun element && gun element
+
 (|||) :: (LaTeXElement -> Bool) -> (LaTeXElement -> Bool) -> LaTeXElement -> Bool
 (|||) fun gun element = fun element || gun element
 
@@ -95,7 +102,7 @@ clean :: Config
 clean = Config
   { periodChars   = []
   , search        = const False
-  , isolate       = const False
+  , isolate       = isolateWith []
   , skip          = const False
   , unskip        = const False
   , eos           = const False
@@ -107,13 +114,21 @@ clean = Config
 conservative :: Config
 conservative = def
   { search        = whitelist []
-  , isolate       = const False
+  , isolate       = isolateWith []
   , eos           = after ["\\par"]
   }
 
 -- busy configuration
 busy :: Config
 busy = conservative { search = blacklist [] }
+
+-- abstract/small font configuration
+small :: Config
+small = def
+  { skip    = (not . after ["\\small"])       &&& (after ["\\normalsize"] ||| defaultSkip)
+  , unskip  = (not . after ["\\normalsize"])  &&& (after ["\\small"]      ||| defaultUnskip)
+  , replace = \caps -> pack "{\\footnotesize " `append` snoc caps '}'
+  }
 
 whitelist :: [String] -> LaTeXElement -> Bool
 whitelist _     (Printable _)     = True
@@ -128,5 +143,16 @@ after :: [String] -> LaTeXElement -> Bool
 after names (Macro name _)        = name `elem` map pack names
 after names (Environment name _)  = name `elem` map pack names
 after _ _                         = False
+
+isolateWith :: [(String, String)] -> LaTeXElement -> Maybe Text
+isolateWith names (Macro        name _) = findConfigName name names
+isolateWith names (Environment  name _) = findConfigName name names
+isolateWith _     _                     = Nothing
+
+findConfigName :: Text -> [(String, String)] -> Maybe Text
+findConfigName name = foldr fun Nothing
+  where fun (n,c) Nothing | pack n == name  = Just (pack c)
+                          | otherwise       = Nothing
+        fun _     x                         = x
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

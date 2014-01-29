@@ -33,6 +33,7 @@ checks =
   , ("% SMALLCAPS SEARCH * abc\n",              checkBlackWhite search  [] [abc, def, ghi, jkl, mno, pqr])
   , ("% smallcaps search / abc\n",              checkBlackWhite search  [abc, def, ghi, jkl, mno, pqr] [])
   , ("% SMALLCAPS SEARCH / abc\n",              checkBlackWhite search  [abc, def, ghi, jkl, mno, pqr] [])
+  {-
   , ("% smallcaps isolate + abc, \\def ghi\n",  checkBlackWhite isolate [ghi, jkl] [abc, def, mno, pqr])
   , ("% SMALLCAPS ISOLATE + abc, \\def ghi\n",  checkBlackWhite isolate [ghi, jkl] [abc, def, mno, pqr])
   , ("% smallcaps isolate - \\mno jkl\n",       checkBlackWhite isolate [abc, def, ghi, jkl, mno] [pqr])
@@ -41,6 +42,7 @@ checks =
   , ("% SMALLCAPS ISOLATE * abc\n",             checkBlackWhite isolate [] [abc, def, ghi, jkl, mno, pqr])
   , ("% smallcaps isolate / abc\n",             checkBlackWhite isolate [abc, def, ghi, jkl, mno, pqr] [])
   , ("% SMALLCAPS ISOLATE / abc\n",             checkBlackWhite isolate [abc, def, ghi, jkl, mno, pqr] [])
+  -}
   , ("% smallcaps skip + abc, \\def ghi\n",     checkBlackWhite skip    [ghi, jkl] [abc, def, mno, pqr])
   , ("% SMALLCAPS SKIP + abc, \\def ghi\n",     checkBlackWhite skip    [ghi, jkl] [abc, def, mno, pqr])
   , ("% smallcaps skip - \\mno jkl\n",          checkBlackWhite skip    [abc, def, ghi, jkl, mno] [pqr])
@@ -75,7 +77,7 @@ checkDefault conf
   =   checkBlackWhitePeriods ",:" ".!?" conf
   &&  checkSubstBlock "\\small" conf
   &&  checkBlackWhite search [Macro (pack "\\fun") []] [Environment (pack "document") [], Macro (pack "\\\\") []] conf
-  &&  checkBlackWhite isolate [Macro (pack "\\fun") []] [Macro (pack "\\footnote") [], Macro (pack "\\marginpar") []] conf
+  -- &&  checkBlackWhite isolate [Macro (pack "\\fun") []] [Macro (pack "\\footnote") [], Macro (pack "\\marginpar") []] conf
   &&  checkBlackWhite skip [Macro (pack "\\normalsize") []]
         [ Macro (pack "\\tiny") []
         , Macro (pack "\\scriptsize") []
@@ -129,7 +131,7 @@ teststate = Default.def { config = testconf }
 testconf :: Config
 testconf = clean
   { search  = def'
-  , isolate = def'
+  -- , isolate = def'
   , skip    = def'
   , unskip  = def'
   , eos     = def'

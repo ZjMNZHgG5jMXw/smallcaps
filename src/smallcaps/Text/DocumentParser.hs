@@ -3,7 +3,7 @@ module Text.DocumentParser where
 import            Text.Parsec           ( runParser, getState, modifyState, putState, many )
 import            Control.Monad         ( msum )
 import            Data.Default          ( def )
-import qualified  Data.Map       as Map ( insert )
+import qualified  Data.Map       as Map ( insert, lookup )
 
 import            Data.LaTeX            ( LaTeX, LaTeXElement (..) )
 import qualified  Text.LaTeXParser as L ( Parser )
@@ -33,17 +33,20 @@ runSubDocument fun x = do
   else putState  state'
   return x'
 
-isolateSubDocument :: SubParser a -> a -> Parser a
-isolateSubDocument fun x = do
+isolateSubDocument :: Config -> SubParser a -> a -> Parser a
+isolateSubDocument conf fun x = do
   state <- getState
-  either fail (return . fst) $ fun (state { stop = def }) x
+  either fail (return . fst) $ fun (state { config = conf, stop = def }) x
 
 decideSub :: LaTeXElement -> SubParser a -> a -> Parser a
-decideSub element fun x = sub =<< fmap config getState where
-  sub conf
-    | isolate conf element  = isolateSubDocument fun x
-    | search  conf element  = runSubDocument fun x
-    | otherwise             = return x
+decideSub element fun x = do
+  state <- getState
+  let conf = config state
+  maybe
+    ( if search conf element then runSubDocument fun x else return x )
+    ( flip (flip isolateSubDocument fun) x )
+    $ maybe Nothing (flip Map.lookup (profile state))
+    $ isolate conf element
 
 document :: Parser LaTeX
 document = many documentElement
