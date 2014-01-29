@@ -193,7 +193,7 @@ iListBlack fun = do
 
 iListWhite :: (LaTeXElement -> Maybe Text) -> Parser (LaTeXElement -> Maybe Text)
 iListWhite fun = do
-  c   <- lex $ takeWhile1 isAlphaNum
+  c   <- lex $ takeWhile1 isAlphaNum `mplus` return (pack "default")
   lex $ char '+'
   xs  <- listItems
   return $ \x ->  if x `isElement` xs
@@ -202,7 +202,7 @@ iListWhite fun = do
 
 iListConstAll :: Parser (LaTeXElement -> Maybe Text)
 iListConstAll = do
-  c   <- lex $ takeWhile1 isAlphaNum
+  c   <- lex $ takeWhile1 isAlphaNum `mplus` return (pack "default")
   lex $ char '*' 
   return $ const (Just c)
 
