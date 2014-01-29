@@ -19,7 +19,6 @@ reconfigure state = either (const Nothing) Just . parseOnly (reconfiguration sta
 reconfiguration :: ParserState -> Parser Config
 reconfiguration state = preamble >> msum
   [ profileMain (profile state)
-  , storeMain   state
   , periodMain  conf
   , replaceMain conf
   , searchMain  conf
