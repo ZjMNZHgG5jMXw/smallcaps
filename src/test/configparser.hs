@@ -17,6 +17,8 @@ checks :: [(String, Config -> Bool)]
 checks =
   [ ("% smallcaps reset profile default abc\n",               checkDefault)
   , ("% SMALLCAPS RESET PROFILE default abc\n",               checkDefault)
+  , ("% smallcaps restore profile default abc\n",             checkDefault)
+  , ("% SMALLCAPS RESTORE PROFILE default abc\n",             checkDefault)
   , ("% smallcaps periods are .! abc\n",                      checkBlackWhitePeriods "?" ".!")
   , ("% SMALLCAPS PERIODS ARE .! abc\n",                      checkBlackWhitePeriods "?" ".!")
   , ("% smallcaps substitution in block with \\small abc\n",  checkSubstBlock "\\small")

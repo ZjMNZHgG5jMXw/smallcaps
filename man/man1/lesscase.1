@@ -150,6 +150,19 @@ configuration.
 .RS
 .RE
 .TP
+.B \f[C]%\ smallcaps\ restore\ profile\f[] \f[I]name\f[]
+Same as "\f[C]%\ smallcaps\ reset\ profile\f[] \f[I]name\f[]".
+.RS
+.RE
+.TP
+.B \f[C]%\ smallcaps\ store\ profile\f[] \f[I]name\f[]
+This comment stores the current configuration profile as \f[I]name\f[].
+Existing profiles will be overwritten.
+Note that you can very well overwrite the initial configuration
+profiles, such as \f[C]default\f[].
+.RS
+.RE
+.TP
 .B \f[C]%\ smallcaps\ periods\ are\f[] \f[I]chars\f[]
 This comment sets the characters that would end a sentence, as in the
 program option \f[C]\-\-periods\f[].

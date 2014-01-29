@@ -12,7 +12,7 @@ lesscase [*options*] [*file*]
 
 # DESCRIPTION
 
-lesscase is a pre-processor for LaTeX files. It formats sequences of uppercase letters, e.g., ABC, with TeX\'s `\small` macro, e.g., `{\small ABC}`. Uppercase letters at the beginning of sentences are not formatted. The LaTeX macro can be chosen by the user as well as the formatting conditions.
+lesscase is a pre-processor for LaTeX files. It formats sequences of uppercase letters, e.g., ABC, with TeX's `\small` macro, e.g., `{\small ABC}`. Uppercase letters at the beginning of sentences are not formatted. The LaTeX macro can be chosen by the user as well as the formatting conditions.
 
 lesscase can be configured through its command line arguments as well as through TeX comments. In the default configuration, lesscase does not change the  content of  any  macro  argument  or  environment  (different  from document). More (`conservative`) and less restrictive configuration profiles (`busy`) can be activated and adapted. The default configuration can be restored at any time, even while processing of the input file.
 
@@ -86,6 +86,12 @@ The following LaTeX comments can be embedded into LaTeX source code and will rec
 
 `% smallcaps reset profile` *name*
 :   This comment loads a configuration profile as in the program option `--profile`. Use the `default` as *name* to restore the default configuration.
+
+`% smallcaps restore profile` *name*
+:   Same as "`% smallcaps reset profile` *name*".
+
+`% smallcaps store profile` *name*
+:   This comment stores the current configuration profile as *name*. Existing profiles will be overwritten. Note that you can very well overwrite the initial configuration profiles, such as `default`.
 
 `% smallcaps periods are` *chars*
 :   This comment sets the characters that would end a sentence, as in the program option `--periods`.

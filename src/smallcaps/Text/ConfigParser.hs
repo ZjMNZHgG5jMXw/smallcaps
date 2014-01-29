@@ -45,7 +45,7 @@ profileMain :: Map Text Config -> Parser Config
 profileMain ps = profilePre >> profileName ps
 
 profilePre :: Parser Text
-profilePre = lex (asciiCI (pack "reset")) >> lex (asciiCI (pack "profile"))
+profilePre = lex (asciiCI (pack "reset") `mplus` asciiCI (pack "restore")) >> lex (asciiCI (pack "profile"))
 
 profileName :: Map Text Config -> Parser Config
 profileName ps = maybe (fail "profile not found") return . flip Map.lookup ps =<< lex (takeWhile1 isAlphaNum)
