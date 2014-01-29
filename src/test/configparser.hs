@@ -66,7 +66,7 @@ checks =
   ]
 
 failed :: [(String, Config -> Bool)] -> [String]
-failed = map (filter (/='\n') . fst) . filter (\(a,b) -> maybe True (not . b) $ reconfigure teststate (pack a))
+failed = map (filter (/='\n') . fst) . filter (\(a,b) -> either (const True) (not . b) $ reconfigure teststate (pack a))
 
 checkDefault :: Config -> Bool
 checkDefault conf

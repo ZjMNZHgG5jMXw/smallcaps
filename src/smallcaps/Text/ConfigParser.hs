@@ -13,19 +13,20 @@ import Control.Monad              ( mplus, msum )
 import Data.LaTeX                 ( LaTeXElement ( Macro, Environment ) )
 import Data.Config                ( ParserState (..), Config (..), blacklist, whitelist )
 
-reconfigure :: ParserState -> Text -> Maybe Config
-reconfigure state = either (const Nothing) Just . parseOnly (reconfiguration state)
+reconfigure :: ParserState -> Text -> Either (Text, Config) Config
+reconfigure state = either (const (Right (config state))) id . parseOnly (reconfiguration state)
 
-reconfiguration :: ParserState -> Parser Config
+reconfiguration :: ParserState -> Parser (Either (Text, Config) Config)
 reconfiguration state = preamble >> msum
-  [ profileMain (profile state)
-  , periodMain  conf
-  , replaceMain conf
-  , searchMain  conf
-  , isolateMain conf
-  , skipMain    conf
-  , unskipMain  conf
-  , eosMain     conf
+  [ fmap Right  $ profileMain (profile state)
+  , fmap Left   $ storeMain   conf
+  , fmap Right  $ periodMain  conf
+  , fmap Right  $ replaceMain conf
+  , fmap Right  $ searchMain  conf
+  , fmap Right  $ isolateMain conf
+  , fmap Right  $ skipMain    conf
+  , fmap Right  $ unskipMain  conf
+  , fmap Right  $ eosMain     conf
   ] where conf = config state
 
 -- Lexer
@@ -38,7 +39,7 @@ lex p = skipSpace >> p
 preamble :: Parser Text
 preamble = char '%' >> lex (asciiCI (pack "smallcaps"))
 
--- Profile
+-- Restore profile
 
 profileMain :: Map Text Config -> Parser Config
 profileMain ps = profilePre >> profileName ps
@@ -48,6 +49,17 @@ profilePre = lex (asciiCI (pack "reset")) >> lex (asciiCI (pack "profile"))
 
 profileName :: Map Text Config -> Parser Config
 profileName ps = maybe (fail "profile not found") return . flip Map.lookup ps =<< lex (takeWhile1 isAlphaNum)
+
+-- Store profile
+
+storeMain :: Config -> Parser (Text, Config)
+storeMain = (storePre >>) . storeName
+
+storePre :: Parser Text
+storePre = lex (asciiCI (pack "store")) >> lex (asciiCI (pack "profile"))
+
+storeName :: Config -> Parser (Text, Config)
+storeName conf = fmap (flip (,) conf) (lex $ takeWhile1 isAlphaNum)
 
 -- Period chars
 

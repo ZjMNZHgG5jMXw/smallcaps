@@ -3,6 +3,7 @@ module Text.DocumentParser where
 import            Text.Parsec           ( runParser, getState, modifyState, putState, many )
 import            Control.Monad         ( msum )
 import            Data.Default          ( def )
+import qualified  Data.Map       as Map ( insert )
 
 import            Data.LaTeX            ( LaTeX, LaTeXElement (..) )
 import qualified  Text.LaTeXParser as L ( Parser )
@@ -96,7 +97,9 @@ comment = do
   let (Comment text) = x
   state <- getState
   if inlineConfig (config state)
-  then maybe (return ()) (\c -> modifyState (\s -> s { config = c })) $ reconfigure state text
+  then either
+    (\(n,c) -> modifyState (\s -> s { profile = Map.insert n c (profile s) }))
+    (\c     -> modifyState (\s -> s { config = c })) $ reconfigure state text
   else return ()
   return x
 
