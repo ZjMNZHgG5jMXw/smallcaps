@@ -94,9 +94,9 @@ comment = do
   implySkip x
   implyEos x
   let (Comment text) = x
-  conf <- fmap config getState
-  if inlineConfig conf
-  then maybe (return ()) (\c -> modifyState (\s -> s { config = c })) $ reconfigure conf text
+  state <- getState
+  if inlineConfig (config state)
+  then maybe (return ()) (\c -> modifyState (\s -> s { config = c })) $ reconfigure state text
   else return ()
   return x
 

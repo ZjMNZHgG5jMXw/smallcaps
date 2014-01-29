@@ -2,22 +2,24 @@ module Text.ConfigParser where
 
 import Prelude hiding ( lex, takeWhile )
 
-import Data.Char                  ( isSpace, isAlpha, isNumber, isPunctuation, isPrint )
+import Data.Char                  ( isSpace, isAlpha, isNumber, isAlphaNum, isPunctuation, isPrint )
 import Data.Text hiding           ( replace, takeWhile )
+import Data.Map                   ( Map )
+import qualified Data.Map as Map  ( lookup )
 import Data.Attoparsec.Text       ( Parser, parseOnly, satisfy, char, takeWhile1, asciiCI, skipSpace )
 import Data.Attoparsec.Combinator ( many' )
-import Data.Default               ( def )
 import Control.Monad              ( mplus, msum )
 
 import Data.LaTeX                 ( LaTeXElement ( Macro, Environment ) )
-import Data.Config                ( Config (..), clean, conservative, busy, blacklist, whitelist )
+import Data.Config                ( ParserState (..), Config (..), blacklist, whitelist )
 
-reconfigure :: Config -> Text -> Maybe Config
-reconfigure conf = either (const Nothing) Just . parseOnly (reconfiguration conf)
+reconfigure :: ParserState -> Text -> Maybe Config
+reconfigure state = either (const Nothing) Just . parseOnly (reconfiguration state)
 
-reconfiguration :: Config -> Parser Config
-reconfiguration conf = preamble >> msum
-  [ profileMain
+reconfiguration :: ParserState -> Parser Config
+reconfiguration state = preamble >> msum
+  [ profileMain (profile state)
+  , storeMain   state
   , periodMain  conf
   , replaceMain conf
   , searchMain  conf
@@ -25,7 +27,7 @@ reconfiguration conf = preamble >> msum
   , skipMain    conf
   , unskipMain  conf
   , eosMain     conf
-  ]
+  ] where conf = config state
 
 -- Lexer
 
@@ -37,30 +39,16 @@ lex p = skipSpace >> p
 preamble :: Parser Text
 preamble = char '%' >> lex (asciiCI (pack "smallcaps"))
 
--- Policy
+-- Profile
 
-profileMain :: Parser Config
-profileMain = profilePre >> msum
-  [ profileDefault
-  , profileClean
-  , profileConservative
-  , profileBusy
-  ]
+profileMain :: Map Text Config -> Parser Config
+profileMain ps = profilePre >> profileName ps
 
 profilePre :: Parser Text
 profilePre = lex (asciiCI (pack "reset")) >> lex (asciiCI (pack "profile"))
 
-profileDefault :: Parser Config
-profileDefault = lex $ asciiCI (pack "default") >> return def
-
-profileClean :: Parser Config
-profileClean = lex $ asciiCI (pack "clean") >> return clean
-
-profileConservative :: Parser Config
-profileConservative = lex $ asciiCI (pack "conservative") >> return conservative
-
-profileBusy :: Parser Config
-profileBusy = lex $ asciiCI (pack "busy") >> return busy
+profileName :: Map Text Config -> Parser Config
+profileName ps = maybe (fail "profile not found") return . flip Map.lookup ps =<< lex (takeWhile1 isAlphaNum)
 
 -- Period chars
 

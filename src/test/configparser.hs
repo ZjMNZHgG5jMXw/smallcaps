@@ -1,13 +1,14 @@
 module Main where
 
-import System.Exit          ( ExitCode )
-import Data.Text            ( cons, pack, append )
+import System.Exit                        ( ExitCode )
+import Data.Text                          ( cons, pack, append )
+import qualified Data.Default as Default  ( def )
 
-import Data.LaTeX           ( LaTeXElement (..) )
-import Data.Config          ( Config (..), clean )
-import Text.ConfigParser    ( reconfigure )
+import Data.LaTeX                         ( LaTeXElement (..) )
+import Data.Config                        ( ParserState (..), Config (..), clean )
+import Text.ConfigParser                  ( reconfigure )
 
-import Tests                ( failOn )
+import Tests                              ( failOn )
 
 main :: IO ExitCode
 main = failOn $ failed checks
@@ -15,7 +16,7 @@ main = failOn $ failed checks
 checks :: [(String, Config -> Bool)]
 checks =
   [ ("% smallcaps reset profile default abc\n",               checkDefault)
-  , ("% SMALLCAPS RESET PROFILE DEFAULT abc\n",               checkDefault)
+  , ("% SMALLCAPS RESET PROFILE default abc\n",               checkDefault)
   , ("% smallcaps periods are .! abc\n",                      checkBlackWhitePeriods "?" ".!")
   , ("% SMALLCAPS PERIODS ARE .! abc\n",                      checkBlackWhitePeriods "?" ".!")
   , ("% smallcaps substitution in block with \\small abc\n",  checkSubstBlock "\\small")
@@ -65,7 +66,7 @@ checks =
   ]
 
 failed :: [(String, Config -> Bool)] -> [String]
-failed = map (filter (/='\n') . fst) . filter (\(a,b) -> maybe True (not . b) $ reconfigure testdefault (pack a))
+failed = map (filter (/='\n') . fst) . filter (\(a,b) -> maybe True (not . b) $ reconfigure teststate (pack a))
 
 checkDefault :: Config -> Bool
 checkDefault conf
@@ -120,8 +121,11 @@ checkSubstArg macro conf = replace conf (pack "cba") == pack macro `append` pack
 checkBlackWhite :: (Config -> LaTeXElement -> Bool) -> [LaTeXElement] -> [LaTeXElement] -> Config -> Bool
 checkBlackWhite fun blacks whites conf = foldr ((&&) . fun conf) (not (foldr ((||) . fun conf) False blacks)) whites
 
-testdefault :: Config
-testdefault = clean
+teststate :: ParserState
+teststate = Default.def { config = testconf }
+
+testconf :: Config
+testconf = clean
   { search  = def'
   , isolate = def'
   , skip    = def'

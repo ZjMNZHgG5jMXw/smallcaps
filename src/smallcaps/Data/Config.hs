@@ -1,8 +1,10 @@
 module Data.Config where
 
-import Data.Default     ( Default, def )
-import Data.Text        ( Text, pack, snoc, append )
-import Data.LaTeX       ( LaTeXElement (..) )
+import            Data.Default    ( Default, def )
+import            Data.Text       ( Text, pack, snoc, append )
+import            Data.Map        ( Map )
+import qualified  Data.Map as Map ( fromList )
+import            Data.LaTeX      ( LaTeXElement (..) )
 
 data StopState
   = None
@@ -18,6 +20,7 @@ type SubParser a = ParserState -> a -> Either String (a, ParserState)
 
 data ParserState = ParserState
   { config  :: Config
+  , profile :: Map Text Config
   , stop    :: StopState
   , ignore  :: Bool
   }
@@ -25,6 +28,11 @@ data ParserState = ParserState
 instance Default ParserState where
   def = ParserState
     { config  = def
+    , profile = Map.fromList  [ (pack "default",      def)
+                              , (pack "clean",        clean)
+                              , (pack "conservative", conservative)
+                              , (pack "busy",         busy)
+                              ]
     , stop    = def
     , ignore  = False
     }
