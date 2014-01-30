@@ -34,9 +34,9 @@ macro = fmap Macro $ do
 
 block :: Parser TeXElement
 block = fmap Block $ do
-  blockBegin
+  _ <- blockBegin
   c <- tex
-  blockEnd
+  _ <- blockEnd
   return c
 
 commentChar :: Parser Char

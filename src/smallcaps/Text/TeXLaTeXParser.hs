@@ -48,7 +48,7 @@ updpos pos _ _ = pos
 
 macroTextArg :: Text -> Parser Text -- ^ matches macro name and returns the first printable to the text only
 macroTextArg name = do
-  skipMacro name
+  _ <- skipMacro name
   (L.Block latex') <- anyBlock
   case latex' of
     (L.Printable text:_)  -> return text

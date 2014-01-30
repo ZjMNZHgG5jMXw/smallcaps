@@ -186,8 +186,8 @@ iList fun = msum [iListBlack fun, iListWhite fun, iListConstAll, iListConstNone]
 
 iListBlack :: (LaTeXElement -> Maybe Text) -> Parser (LaTeXElement -> Maybe Text)
 iListBlack fun = do
-  lex $ char '-'
-  xs <- listItems
+  _   <- lex $ char '-'
+  xs  <- listItems
   return $ \x ->  if x `isElement` xs
                   then Nothing
                   else fun x
@@ -195,7 +195,7 @@ iListBlack fun = do
 iListWhite :: (LaTeXElement -> Maybe Text) -> Parser (LaTeXElement -> Maybe Text)
 iListWhite fun = do
   c   <- lex $ takeWhile1 isAlphaNum `mplus` return (pack "default")
-  lex $ char '+'
+  _   <- lex $ char '+'
   xs  <- listItems
   return $ \x ->  if x `isElement` xs
                   then Just c
@@ -204,20 +204,20 @@ iListWhite fun = do
 iListConstAll :: Parser (LaTeXElement -> Maybe Text)
 iListConstAll = do
   c   <- lex $ takeWhile1 isAlphaNum `mplus` return (pack "default")
-  lex $ char '*' 
+  _   <- lex $ char '*' 
   return $ const (Just c)
 
 iListConstNone :: Parser (LaTeXElement -> Maybe Text)
 iListConstNone = do
-  lex $ char '/'
+  _   <- lex $ char '/'
   return $ const Nothing
 
 -- list item parser
 
 listItems :: Parser [Text]
 listItems = do
-  x <- listItem
-  xs <- many' (listItemSeparator >> listItem)
+  x   <- listItem
+  xs  <- many' (listItemSeparator >> listItem)
   return (x:xs)
 
 listItem :: Parser Text
