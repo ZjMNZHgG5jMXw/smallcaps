@@ -1,17 +1,16 @@
 module Text.TeXLaTeXParser where
 
 import Text.Parsec    ( Parsec, SourcePos, parse, tokenPrim, many )
-import Data.Text      ( Text, empty, pack, unpack )
+import Data.Text      ( Text, empty, pack, unpack, intercalate )
 import Control.Monad  ( liftM2, mplus, msum )
 
-import qualified Data.TeX    as T ( TeX, TeXElement
-                                  , isPrintable, isMacro, isBlock, isComment
-                                  , content, body
-                                  )
-import qualified Data.LaTeX  as L ( LaTeXElement (..) )
-import           Data.LaTeX       ( LaTeX, LaTeXElement )
+import Data.TeX       ( TeX, TeXElement
+                      , isPrintable, isMacro, isBlock, isComment
+                      , content, body
+                      )
+import Data.LaTeX     ( LaTeX, LaTeXElement (..) )
 
-type Parser       = Parsec T.TeX ()
+type Parser       = Parsec TeX ()
 
 latex :: Parser LaTeX
 latex = many $ msum
@@ -20,39 +19,49 @@ latex = many $ msum
   , latexElement
   ]
 
-latexElement :: Parser LaTeXElement
-latexElement = satisfy (const True)
+-- TeXElement
 
-satisfy :: (T.TeXElement -> Bool) -> Parser LaTeXElement
+satisfy :: (TeXElement -> Bool) -> Parser TeXElement
 satisfy pass = tokenPrim show updpos get where
-  get x | T.isPrintable x && pass x = Just $ L.Printable  (T.content x)
-        | T.isMacro x     && pass x = Just $ L.Macro      (T.content x) [] -- use macro instead!
-        | T.isBlock x     && pass x = Just $ L.Block $ either (const []) id $ parse latex "" (T.body x)
-        | T.isComment x   && pass x = Just $ L.Comment    (T.content x)
-        | otherwise                 = Nothing
+  get x | pass x    = Just x
+        | otherwise = Nothing
 
-skipMacro :: Text -> Parser LaTeXElement
-skipMacro name = satisfy (liftM2 (&&) T.isMacro ((name ==) . T.content))
+skipMacro :: Text -> Parser TeXElement
+skipMacro name = satisfy (liftM2 (&&) isMacro ((name ==) . content))
 
-macroSatisfy :: (T.TeXElement -> Bool) -> Parser LaTeXElement
-macroSatisfy cond = satisfy (liftM2 (&&) T.isMacro cond) >>= \(L.Macro name _) -> fmap (L.Macro name) (many anyBlock)
+-- LaTeXElement
+
+translate :: TeXElement -> LaTeXElement
+translate x
+  | isPrintable x = Printable (content x)
+  | isMacro     x = Macro     (content x) [] -- use macro instead!
+  | isComment   x = Comment   (content x)
+  | otherwise     = Block $ either (const []) id $ parse latex "" (body x)
+
+macroSatisfy :: (TeXElement -> Bool) -> Parser LaTeXElement
+macroSatisfy cond = satisfy (liftM2 (&&) isMacro cond) >>= \x -> fmap (Macro (content x)) (many anyBlock)
 
 macro :: Parser LaTeXElement
 macro = macroSatisfy (const True)
 
+macroTextArg :: Text -> Parser Text
+macroTextArg name = skipMacro name >> fmap arg (satisfy isBlock)
+  where arg = intercalate empty . map content . filter isPrintable . body
+
+environment :: Parser LaTeXElement
+environment = do
+  nameB   <- beginEnv
+  latex'  <- many (environment `mplus` macroSatisfy (not . isEndEnv) `mplus` fmap translate (satisfy (not . isEndEnv)))
+  nameE   <- endEnv
+  if nameB == nameE
+  then return (Environment nameB latex')
+  else fail ("\\end{" ++ unpack nameB ++ "} expected. found " ++ unpack nameE)
+
 anyBlock :: Parser LaTeXElement
-anyBlock = satisfy T.isBlock
+anyBlock = fmap translate (satisfy isBlock)
 
-updpos :: SourcePos -> t -> s -> SourcePos
-updpos pos _ _ = pos
-
-macroTextArg :: Text -> Parser Text -- ^ matches macro name and returns the first printable to the text only
-macroTextArg name = do
-  _ <- skipMacro name
-  (L.Block latex') <- anyBlock
-  case latex' of
-    (L.Printable text:_)  -> return text
-    _                     -> return empty
+latexElement :: Parser LaTeXElement
+latexElement = fmap translate (satisfy (const True))
 
 beginEnv :: Parser Text
 beginEnv = macroTextArg (pack "\\begin")
@@ -60,16 +69,10 @@ beginEnv = macroTextArg (pack "\\begin")
 endEnv :: Parser Text
 endEnv = macroTextArg (pack "\\end")
 
-environment :: Parser LaTeXElement
-environment = do
-  nameB <- beginEnv
-  latex' <- many (environment `mplus` macroSatisfy (not . isEndEnv) `mplus` satisfy (not . isEndEnv))
-  nameE <- endEnv
-  if nameB == nameE
-  then return (L.Environment nameB latex')
-  else fail ("\\end{" ++ unpack nameB ++ "} expected. found " ++ unpack nameE)
+isEndEnv :: TeXElement -> Bool
+isEndEnv x = isMacro x && content x == pack "\\end"
 
-isEndEnv :: T.TeXElement -> Bool
-isEndEnv x = T.isMacro x && T.content x == pack "\\end"
+updpos :: SourcePos -> t -> s -> SourcePos
+updpos pos _ _ = pos
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai
