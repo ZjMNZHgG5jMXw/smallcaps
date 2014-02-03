@@ -58,7 +58,7 @@ macroSatisfy cond = satisfy (liftM2 (&&) isMacro cond) >>= \x -> fmap (Macro (co
 macro :: Parser LaTeXElement
 macro = do
   x <- macroSatisfy (const True)
-  if (name x == pack "include") || (name x == pack "input")
+  if (name x == pack "\\include") || (name x == pack "\\input")
   then lift $ tell [intercalate empty $ map printable $ L.body x]
   else return ()
   return x
