@@ -1,6 +1,6 @@
 module Data.TeX where
 
-import Data.Text ( Text, empty )
+import Data.Text ( Text, empty, intercalate )
 import Data.Char ( isPrint, isNumber, isSpace, isLetter )
 
 type TeX = [TeXElement]
@@ -39,6 +39,11 @@ content (Printable text)  = text
 content (Macro text)      = text
 content (Comment text)    = text
 content _                 = empty
+
+printable :: TeXElement -> Text
+printable (Printable text)  = text
+printable (Block tex)       = intercalate empty $ map printable tex
+printable _                 = empty
 
 body :: TeXElement -> TeX
 body (Block tex)  = tex

@@ -1,16 +1,27 @@
 module Text.TeXLaTeXParser where
 
-import Text.Parsec    ( Parsec, SourcePos, parse, tokenPrim, many )
-import Data.Text      ( Text, empty, pack, unpack, intercalate )
-import Control.Monad  ( liftM2, mplus, msum )
+import Text.Parsec                ( ParsecT, runParserT, SourcePos, ParseError, tokenPrim, many )
+import Data.Text                  ( Text, empty, pack, unpack, intercalate )
+import Control.Monad              ( liftM2, mplus, msum )
+import Control.Monad.Trans.Writer ( WriterT, Writer, runWriter, tell )
+import Control.Monad.Trans.Class  ( lift )
+import Control.Arrow              ( first )
 
-import Data.TeX       ( TeX, TeXElement
-                      , isPrintable, isMacro, isBlock, isComment
-                      , content, body
-                      )
-import Data.LaTeX     ( LaTeX, LaTeXElement (..) )
+import Data.TeX                   ( TeX, TeXElement
+                                  , isPrintable, isMacro, isBlock, isComment
+                                  , content
+                                  )
+import qualified Data.TeX   as T  ( body )
+import Data.LaTeX                 ( LaTeX, LaTeXElement (..), name, printable )
+import qualified Data.LaTeX as L  ( body )
 
-type Parser       = Parsec TeX ()
+type Parser       = ParsecT TeX () (Writer [Text])
+
+parse :: Parser [a] -> TeX -> ([a], [Text])
+parse = (first (either (const []) id) .) . parse'
+
+parse' :: Parser a -> TeX -> (Either ParseError a, [Text])
+parse' = (runWriter .) . flip (flip runParserT ()) ""
 
 latex :: Parser LaTeX
 latex = many $ msum
@@ -27,41 +38,49 @@ satisfy pass = tokenPrim show updpos get where
         | otherwise = Nothing
 
 skipMacro :: Text -> Parser TeXElement
-skipMacro name = satisfy (liftM2 (&&) isMacro ((name ==) . content))
+skipMacro name' = satisfy (liftM2 (&&) isMacro ((name' ==) . content))
 
 -- LaTeXElement
 
-translate :: TeXElement -> LaTeXElement
+translate :: TeXElement -> (LaTeXElement, [Text])
 translate x
-  | isPrintable x = Printable (content x)
-  | isMacro     x = Macro     (content x) [] -- use macro instead!
-  | isComment   x = Comment   (content x)
-  | otherwise     = Block $ either (const []) id $ parse latex "" (body x)
+  | isPrintable x = (Printable  (content x),    [])
+  | isMacro     x = (Macro      (content x) [], []) -- use macro instead!
+  | isComment   x = (Comment    (content x),    [])
+  | otherwise     = first Block $ parse latex (T.body x)
+
+translateTell :: Monad m => TeXElement -> WriterT [Text] m LaTeXElement
+translateTell = uncurry (flip ((>>) . tell) . return) . translate
 
 macroSatisfy :: (TeXElement -> Bool) -> Parser LaTeXElement
 macroSatisfy cond = satisfy (liftM2 (&&) isMacro cond) >>= \x -> fmap (Macro (content x)) (many anyBlock)
 
 macro :: Parser LaTeXElement
-macro = macroSatisfy (const True)
+macro = do
+  x <- macroSatisfy (const True)
+  if (name x == pack "include") || (name x == pack "input")
+  then lift $ tell [intercalate empty $ map printable $ L.body x]
+  else return ()
+  return x
 
 macroTextArg :: Text -> Parser Text
-macroTextArg name = skipMacro name >> fmap arg (satisfy isBlock)
-  where arg = intercalate empty . map content . filter isPrintable . body
+macroTextArg name' = skipMacro name' >> fmap arg (satisfy isBlock)
+  where arg = intercalate empty . map content . filter isPrintable . T.body
 
 environment :: Parser LaTeXElement
 environment = do
   nameB   <- beginEnv
-  latex'  <- many (environment `mplus` macroSatisfy (not . isEndEnv) `mplus` fmap translate (satisfy (not . isEndEnv)))
+  latex'  <- many (environment `mplus` macroSatisfy (not . isEndEnv) `mplus` (lift . translateTell =<< satisfy (not . isEndEnv)))
   nameE   <- endEnv
   if nameB == nameE
   then return (Environment nameB latex')
   else fail ("\\end{" ++ unpack nameB ++ "} expected. found " ++ unpack nameE)
 
 anyBlock :: Parser LaTeXElement
-anyBlock = fmap translate (satisfy isBlock)
+anyBlock = lift . translateTell =<< satisfy isBlock
 
 latexElement :: Parser LaTeXElement
-latexElement = fmap translate (satisfy (const True))
+latexElement = lift . translateTell =<< satisfy (const True)
 
 beginEnv :: Parser Text
 beginEnv = macroTextArg (pack "\\begin")

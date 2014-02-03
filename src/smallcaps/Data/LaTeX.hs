@@ -42,6 +42,11 @@ content (Printable text)  = text
 content (Comment text)    = text
 content _                 = empty
 
+printable :: LaTeXElement -> Text
+printable (Printable text)  = text
+printable (Macro _ _)       = empty
+printable x                 = cc $ map printable $ body x
+
 body :: LaTeXElement -> LaTeX
 body (Macro _ latex)        = latex
 body (Environment _ latex)  = latex
@@ -49,7 +54,7 @@ body (Block latex)          = latex
 body _                      = []
 
 cc :: [Text] -> Text
-cc = intercalate (pack "")
+cc = intercalate empty
 
 unlatex :: LaTeX -> Text
 unlatex = cc . map unlatexElement

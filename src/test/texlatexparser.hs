@@ -2,11 +2,10 @@ module Main where
 
 import System.Exit                ( ExitCode )
 import Data.Text                  ( pack )
-import Text.Parsec                ( parse )
 
 import qualified Data.TeX   as T  ( TeX, TeXElement (..) )
 import qualified Data.LaTeX as L  ( LaTeX, LaTeXElement (..) )
-import Text.TeXLaTeXParser        ( latex )
+import Text.TeXLaTeXParser        ( parse, latex )
 
 import Tests                      ( failOn )
 
@@ -31,6 +30,6 @@ checks =
   ]
 
 failed :: [(T.TeX, L.LaTeX)] -> [String]
-failed = map (show . fst) . filter (uncurry ((. Just) . (/=) . either (const Nothing) Just . parse latex ""))
+failed = map (show . fst) . filter (uncurry ((/=) . fst . parse latex))
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai
