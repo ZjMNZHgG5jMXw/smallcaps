@@ -2,10 +2,14 @@ module Text.DocumentParser where
 
 import            Text.Parsec           ( runParser, getState, modifyState, putState, many )
 import            Control.Monad         ( msum )
+import            Control.Arrow         ( second )
 import            Data.Default          ( def )
-import qualified  Data.Map       as Map ( insert, lookup )
+import            Data.Text             ( empty, pack, intercalate, unpack )
+import            Data.Map              ( Map )
+import qualified  Data.Map       as Map ( insert, update, lookup )
 
 import            Data.LaTeX            ( LaTeX, LaTeXElement (..), name, body, content )
+import qualified  Data.LaTeX   as LaTeX ( printable )
 import qualified  Text.LaTeXParser as L ( Parser )
 import            Text.LaTeXParser      ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyComment )
 import            Data.Config           ( ParserState (..), Config (..), SubParser )
@@ -16,6 +20,11 @@ type Parser = L.Parser ParserState
 
 runDocument :: Config -> LaTeX -> Either String LaTeX
 runDocument conf = either Left (Right . fst) . runDocumentWith (def { config = conf })
+
+runDocument'
+  :: Map FilePath (FilePath, LaTeX) -> Config -> LaTeX
+  -> Either String (LaTeX, Map FilePath (FilePath, LaTeX))
+runDocument' ls conf = either Left (Right . second inputs) . runDocumentWith (def { config = conf, inputs = ls })
 
 runDocumentWith :: SubParser LaTeX
 runDocumentWith state = either (Left . show) Right . runParser (stateAnd document) state ""
@@ -72,6 +81,7 @@ macro :: Parser LaTeXElement
 macro = do
   x <- anyMacro
   implySkip x
+  implyInput x
   latex <- decideSub x runDocumentWith (body x)
   implyEos x
   return $ Macro (name x) latex
@@ -111,6 +121,18 @@ implySkip element = sub =<< fmap config getState where
     | skip conf element   = modifyState (\state -> state { ignore = True })
     | unskip conf element = modifyState (\state -> state { ignore = False })
     | otherwise           = return ()
+
+implyInput :: LaTeXElement -> Parser ()
+implyInput element
+  | macroname == pack "\\include" || macroname == pack "\\input"  = fork
+  | otherwise                                                     = return ()
+  where
+    macroname           = name element
+    update fn ltx state = putState (state { inputs = Map.update (Just . second (const ltx)) fn (inputs state) })
+    fork = do
+      state <- getState
+      let fn = unpack $ intercalate empty $ map LaTeX.printable (body element)
+      maybe (return ()) (either fail (uncurry (update fn)) . runDocumentWith state . snd) $ Map.lookup fn (inputs state)
 
 implyEos :: LaTeXElement -> Parser ()
 implyEos element = do

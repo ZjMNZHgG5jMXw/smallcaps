@@ -3,10 +3,10 @@ module Data.Config where
 import            Data.Default    ( Default, def )
 import            Data.Text       ( Text, pack, snoc, append )
 import            Data.Map        ( Map )
-import qualified  Data.Map as Map ( fromList )
+import qualified  Data.Map as Map ( empty, fromList )
 import            Control.Monad   ( liftM2 )
 
-import            Data.LaTeX      ( LaTeXElement
+import            Data.LaTeX      ( LaTeX, LaTeXElement
                                   , isPrintable, isMacro, isEnvironment, isBlock, isComment
                                   , name
                                   )
@@ -25,6 +25,7 @@ type SubParser a = ParserState -> a -> Either String (a, ParserState)
 
 data ParserState = ParserState
   { config  :: Config
+  , inputs  :: Map FilePath (FilePath, LaTeX)
   , profile :: Map Text Config
   , stop    :: StopState
   , ignore  :: Bool
@@ -33,6 +34,7 @@ data ParserState = ParserState
 instance Default ParserState where
   def = ParserState
     { config  = def
+    , inputs  = Map.empty
     , profile = Map.fromList  [ (pack "default",      def)
                               , (pack "clean",        clean)
                               , (pack "conservative", conservative)

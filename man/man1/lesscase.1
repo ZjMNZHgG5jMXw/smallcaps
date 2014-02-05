@@ -52,6 +52,20 @@ Useful in German texts.
 .RE
 .SH OPTIONS
 .TP
+.B \-\-prefix=\f[I]path\f[]
+Use \f[I]path\f[] as a prefix for all output files.
+The input files are not altered.
+When you use a prefix, the \f[I]file\f[] argument needs to be a relative
+path.
+.RS
+.RE
+.TP
+.B \-r, \-\-recursive
+Follow recursively \f[C]\\include\f[] and \f[C]\\input\f[] statements in
+the LaTeX source code.
+.RS
+.RE
+.TP
 .B \-\-no\-inline
 Ignore configuration statements embedded in the LaTeX source code.
 .RS

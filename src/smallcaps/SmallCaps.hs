@@ -1,35 +1,38 @@
 module SmallCaps where
 
-import System.IO              ( Handle, hClose, openFile, openTempFile, IOMode ( ReadMode ), stdin, stdout )
+import System.IO              ( Handle, hClose, openFile, openTempFile, IOMode (..), stdin, stdout )
 import Data.Text.IO           ( hGetContents, hPutStr )
-import System.FilePath        ( takeDirectory, takeBaseName )
-import System.Directory       ( renameFile )
+import System.FilePath        ( (</>), takeDirectory, takeBaseName, makeRelative, hasExtension, replaceExtension )
+import System.Directory       ( renameFile, canonicalizePath, makeRelativeToCurrentDirectory, createDirectoryIfMissing )
 import System.Environment     ( getProgName, getArgs )
 import System.Exit            ( exitFailure )
 import System.Console.GetOpt  ( OptDescr ( Option ), ArgDescr ( NoArg, ReqArg ), ArgOrder ( Permute ), getOpt, usageInfo )
 import Data.Version           ( Version ( Version ), versionBranch, versionTags, showVersion )
 import Data.Default           ( def )
 import Data.Attoparsec.Text   ( parseOnly )
-import Data.Text              ( Text, pack )
+import Data.Text              ( Text, pack, unpack )
+import Data.Map               ( Map )
+import qualified Data.Map as Map ( empty, member, insert, elems )
+import Control.Monad          ( foldM )
 
 import Data.Config            ( Config (..), conservative, busy, clean )
 import Data.LaTeX             ( LaTeX, unlatex )
 import Text.TeXParser         ( tex )
 import Text.TeXLaTeXParser    ( parse, latex )
-import Text.DocumentParser    ( runDocument )
+import Text.DocumentParser    ( runDocument, runDocument' )
 import Text.ConfigParser      ( replaceMacro, searchList, isolateList, skipList, unskipList, eosList )
 import qualified Text.ConfigParser as ConfigParser ( Style ( .. ) )
 
 version :: Version
 version = Version
-  { versionBranch = [0,2,1]
+  { versionBranch = [0,2,2]
   , versionTags   = ["pre"]
   }
 
 -- pure
 
-smallcapsPure :: Config -> Text -> Either String Text
-smallcapsPure conf = fmap unlatex . (runDocument conf =<<) . fmap fst . parseLaTeX
+smallcapsNoRecursion :: Config -> Text -> Either String Text
+smallcapsNoRecursion conf = fmap unlatex . (runDocument conf =<<) . fmap fst . parseLaTeX
 
 parseLaTeX :: Text -> Either String (LaTeX, [Text])
 parseLaTeX = fmap (parse latex) . parseOnly tex
@@ -37,36 +40,78 @@ parseLaTeX = fmap (parse latex) . parseOnly tex
 -- main program
 
 smallcaps :: Config -> IO ()
-smallcaps conf = uncurry (run conf) =<< opts =<< getArgs
+smallcaps conf = uncurry (runFlags conf) =<< opts =<< getArgs
 
-run :: Config -> [Flag] -> [String] -> IO ()
-run conf flags filenames
-  | Help `elem` flags     = usage
-  | ProgVer `elem` flags  = putVersion
-  | null filenames        = smallcapsPipe                   (reconf conf flags)
-  | otherwise             = smallcapsFile (head filenames)  (reconf conf flags)
+runFlags :: Config -> [Flag] -> [String] -> IO ()
+runFlags conf flags filenames
+  | Help `elem` flags       = usage
+  | ProgVer `elem` flags    = putVersion
+  | null filenames          = smallcapsPipe                                               (reconf conf flags)
+  | Recursive `elem` flags  = smallcapsRecursiveFile  (getPrefix flags) (head filenames)  (reconf conf flags)
+  | otherwise               = smallcapsFile           (getPrefix flags) (head filenames)  (reconf conf flags)
 
 smallcapsHandle :: Handle -> Handle -> Config -> IO ()
 smallcapsHandle inp out conf = hPutStr out =<< runParser =<< hGetContents inp
-  where runParser = either fail return . smallcapsPure conf
+  where runParser = either fail return . smallcapsNoRecursion conf
 
 smallcapsPipe :: Config -> IO ()
 smallcapsPipe = smallcapsHandle stdin stdout
 
-smallcapsFile :: FilePath -> Config -> IO ()
-smallcapsFile inpFN conf = do
-  inp           <- openFile inpFN ReadMode
-  (outFN, out)  <- openTempFile (takeDirectory inpFN) (takeBaseName inpFN)
-  smallcapsHandle inp out conf
-  hClose inp
-  hClose out
-  renameFile outFN inpFN
+smallcapsFile :: FilePath -> FilePath -> Config -> IO ()
+smallcapsFile pre inpFN conf = either fail (prefixed pre inpFN) . smallcapsNoRecursion conf =<< hGetContents =<< openFile inpFN ReadMode
+
+smallcapsRecursiveFile :: FilePath -> FilePath -> Config -> IO ()
+smallcapsRecursiveFile pre inpFN conf = do
+  inp <- openFile inpFN ReadMode
+  (inpCode, fs) <- either fail return =<< fmap parseLaTeX (hGetContents inp)
+  ls <- recursiveContents (takeDirectory inpFN) Map.empty (map unpack fs)
+  (outCode, ls') <- either fail return $ runDocument' ls conf inpCode
+  prefixed pre inpFN $ unlatex outCode
+  mapM_ (uncurry ((. unlatex) . prefixed pre)) $ Map.elems ls'
+
+recursiveContents :: FilePath -> Map FilePath (FilePath, LaTeX) -> [FilePath] -> IO (Map FilePath (FilePath, LaTeX))
+recursiveContents orig = foldM get where
+  get ls path =
+    if path `Map.member` ls
+    then return ls
+    else do
+      fn <- canonicalizePath (orig </> makeRelative orig (texPath path))
+      fh <- openFile fn ReadMode
+      (code, fs) <- either fail return =<< fmap parseLaTeX (hGetContents fh)
+      recursiveContents orig (Map.insert path (fn, code) ls) (map unpack fs)
+
+prefixed :: FilePath -> FilePath -> Text -> IO ()
+prefixed pre inpFN text =
+  if pre == "" || pre == "."
+  then do
+    (outFN, out) <- openTempFile (takeDirectory inpFN) (takeBaseName inpFN)
+    hPutStr out text
+    hClose out
+    renameFile outFN inpFN
+  else do
+    outFN <- fmap ((</>) pre) (makeRelativeToCurrentDirectory inpFN)
+    createDirectoryIfMissing True (takeDirectory outFN)
+    out <- openFile outFN WriteMode
+    hPutStr out text
+    hClose out
+
+texPath :: FilePath -> FilePath
+texPath path
+  | hasExtension path = path
+  | otherwise         = replaceExtension path ".tex"
+
+getPrefix :: [Flag] -> String
+getPrefix = foldr get "" where
+  get (Prefix pre)  _    = pre
+  get _             pre' = pre'
 
 -- program flags
 
 data Flag
   = ProgVer
   | Help
+  | Prefix    String
+  | Recursive
   | Profile   String
   | Periods   String
   | BMacro    String
@@ -103,7 +148,9 @@ options :: [OptDescr Flag]
 options =
   [ Option []     ["version"]   (NoArg ProgVer)             "version number"
   , Option ['h']  ["help"]      (NoArg Help)                "program usage"
-  , Option []     ["no-inline"] (NoArg NoInline)            "override configuration by inline TeX comments"
+  , Option []     ["prefix"]    (ReqArg Prefix  "<path>")   "output file prefix"
+  , Option ['r']  ["recursive"] (NoArg Recursive)           "follow \\include and \\input statements"
+  , Option []     ["no-inline"] (NoArg NoInline)            "ignore configuration statements in TeX comments"
   , Option ['p']  ["profile"]   (ReqArg Profile "<name>")   "configuration preset (conservative, busy, clean)"
   , Option ['x']  ["periods"]   (ReqArg Periods "<chars>")  "signs marking the end of a sentence (default: \".!?\")"
   , Option ['m']  ["macro"]     (ReqArg BMacro  "<code>")   "block macro that transforms small caps (default: \"\\small\")"

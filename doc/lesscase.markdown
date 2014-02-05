@@ -32,6 +32,12 @@ lesscase can be configured through its command line arguments as well as through
 
 # OPTIONS
 
+\--prefix=*path*
+:   Use *path* as a prefix for all output files. The input files are not altered. When you use a prefix, the *file* argument needs to be a relative path.
+
+-r, \--recursive
+:   Follow recursively `\include` and `\input` statements in the LaTeX source code.
+
 \--no-inline
 :   Ignore configuration statements embedded in the LaTeX source code.
 
