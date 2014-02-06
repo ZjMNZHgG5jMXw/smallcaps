@@ -1,3 +1,17 @@
+-------------------------------------------------------------------------------
+-- |
+-- Module      :  SmallCaps
+-- Copyright   :  (c) Stefan Berthold 2014
+-- License     :  BSD3-style (see LICENSE)
+--
+-- Maintainer  :  stefan.berthold@gmx.net
+-- Stability   :  unstable
+-- Portability :  GHC
+--
+-- The main program as library.
+--
+-------------------------------------------------------------------------------
+
 module SmallCaps where
 
 import System.IO                  ( Handle, hClose, openFile, openTempFile, IOMode (..), stdin, stdout )
@@ -23,13 +37,15 @@ import SmallCaps.DocumentParser   ( runDocument, runDocument' )
 import SmallCaps.ConfigParser     ( replaceMacro, searchList, isolateList, skipList, unskipList, eosList )
 import qualified SmallCaps.ConfigParser as ConfigParser ( Style ( .. ) )
 
+-- ** Meta information
+
 version :: Version
 version = Version
   { versionBranch = [0,3]
   , versionTags   = []
   }
 
--- pure
+-- ** Pure functions
 
 smallcapsNoRecursion :: Config -> Text -> Either String Text
 smallcapsNoRecursion conf = fmap unlatex . (runDocument conf =<<) . fmap fst . parseLaTeX
@@ -37,18 +53,10 @@ smallcapsNoRecursion conf = fmap unlatex . (runDocument conf =<<) . fmap fst . p
 parseLaTeX :: Text -> Either String (LaTeX, [Text])
 parseLaTeX = fmap (parse latex) . parseOnly tex
 
--- main program
+-- ** Main program function
 
 smallcaps :: Config -> IO ()
 smallcaps conf = uncurry (runFlags conf) =<< opts =<< getArgs
-
-runFlags :: Config -> [Flag] -> [String] -> IO ()
-runFlags conf flags filenames
-  | Help `elem` flags       = usage
-  | ProgVer `elem` flags    = putVersion
-  | null filenames          = smallcapsPipe                                               (reconf conf flags)
-  | Recursive `elem` flags  = smallcapsRecursiveFile  (getPrefix flags) (head filenames)  (reconf conf flags)
-  | otherwise               = smallcapsFile           (getPrefix flags) (head filenames)  (reconf conf flags)
 
 smallcapsHandle :: Handle -> Handle -> Config -> IO ()
 smallcapsHandle inp out conf = hPutStr out =<< runParser =<< hGetContents inp
@@ -105,7 +113,7 @@ getPrefix = foldr get "" where
   get (Prefix pre)  _    = pre
   get _             pre' = pre'
 
--- program flags
+-- ** Program flags
 
 data Flag
   = ProgVer
@@ -123,6 +131,14 @@ data Flag
   | Eos       String
   | NoInline
   deriving (Eq, Show)
+
+runFlags :: Config -> [Flag] -> [String] -> IO ()
+runFlags conf flags filenames
+  | Help `elem` flags       = usage
+  | ProgVer `elem` flags    = putVersion
+  | null filenames          = smallcapsPipe                                               (reconf conf flags)
+  | Recursive `elem` flags  = smallcapsRecursiveFile  (getPrefix flags) (head filenames)  (reconf conf flags)
+  | otherwise               = smallcapsFile           (getPrefix flags) (head filenames)  (reconf conf flags)
 
 reconf :: Config -> [Flag] -> Config
 reconf = foldl fun where
@@ -167,6 +183,8 @@ opts argv = do
   case getOpt Permute options argv of
     (o,n,[])  -> return (o,n)
     (_,_,_ )  -> usage >> exitFailure
+
+-- ** Help texts
 
 usage :: IO ()
 usage = do

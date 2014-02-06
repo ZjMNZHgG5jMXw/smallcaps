@@ -1,3 +1,17 @@
+-------------------------------------------------------------------------------
+-- |
+-- Module      :  SmallCaps.LaTeX
+-- Copyright   :  (c) Stefan Berthold 2014
+-- License     :  BSD3-style (see LICENSE)
+--
+-- Maintainer  :  stefan.berthold@gmx.net
+-- Stability   :  unstable
+-- Portability :  GHC
+--
+-- This modules specifies the data types 'LaTeX' and 'LaTeXElement'.
+--
+-------------------------------------------------------------------------------
+
 module SmallCaps.LaTeX where
 
 import Data.Text ( Text, empty, singleton, pack, intercalate )
@@ -11,6 +25,8 @@ data LaTeXElement
   | Block LaTeX             -- ^ separate block
   | Comment Text            -- ^ comment starting with '%'
   deriving (Eq, Show)
+
+-- ** Query
 
 isPrintable :: LaTeXElement -> Bool
 isPrintable (Printable _) = True
@@ -31,6 +47,8 @@ isBlock _         = False
 isComment :: LaTeXElement -> Bool
 isComment (Comment _) = True
 isComment _           = False
+
+-- ** Accessors
 
 name :: LaTeXElement -> Text
 name (Macro n _)        = n
@@ -53,8 +71,7 @@ body (Environment _ latex)  = latex
 body (Block latex)          = latex
 body _                      = []
 
-cc :: [Text] -> Text
-cc = intercalate empty
+-- ** Translation
 
 unlatex :: LaTeX -> Text
 unlatex = cc . map unlatexElement
@@ -73,5 +90,8 @@ unlatexElement (Block latex) = cc
   , singleton '}'
   ]
 unlatexElement (Comment text) = text
+
+cc :: [Text] -> Text
+cc = intercalate empty
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

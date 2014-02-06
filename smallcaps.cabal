@@ -6,8 +6,50 @@ name:                smallcaps
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
 version:             0.3.0.0
-synopsis:            A library and a program for preceding capital letters in LaTeX files with \small
--- description:         
+synopsis:            A library and a program for pre-processing LaTeX files
+description:         smallcaps is a pre-processor library for LaTeX files.
+                     The library comes with an executable that makes most
+                     functionality accessible through a command line interface.
+                     The pre-processor formats sequences of uppercase letters
+                     with TeX's @\\small@ macro or whatever you configure.
+                     Uppercase letters at the beginning of sentences are not
+                     formatted. Other formatting conditions can be configured by
+                     the user.
+                     .
+                     The executable can be configured through its command line
+                     arguments as well as through TeX comments. In the default
+                     configuration, lesscase does not change the content of any
+                     macro argument or environment (different from document).
+                     More and less restrictive configuration profiles can be
+                     activated and adapted. Configurations can be stored and
+                     restored at any time, even while processing the input
+                     file.
+                     .
+                     ["SmallCaps"]
+                       exports the main program as library.
+                     .
+                     ["SmallCaps.Config"]
+                       specifies the default configuration values for
+                       "SmallCaps".
+                     .
+                     ["SmallCaps.TeXParser"]
+                       parses 'Text' to a 'TeXElement' token stream.
+                     .
+                     ["SmallCaps.TeXLaTeXParser"]
+                       parses a 'TeXElement' token stream and produces a
+                       'LaTeXElement' token stream.
+                     .
+                     ["SmallCaps.DocumentParser"]
+                       replaces uppercase letters in 'LaTeXElement' token
+                       streams.
+                     .
+                     A simple program can be defined as
+                     .
+                     @
+                        import Data.Default   ( def )
+                        import SmallCaps      ( smallcaps )
+                        main = smallcaps def
+                     @
 license:             BSD3
 license-file:        LICENSE
 author:              Stefan Berthold

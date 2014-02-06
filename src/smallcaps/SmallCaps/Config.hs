@@ -1,3 +1,17 @@
+-------------------------------------------------------------------------------
+-- |
+-- Module      :  SmallCaps.Config
+-- Copyright   :  (c) Stefan Berthold 2014
+-- License     :  BSD3-style (see LICENSE)
+--
+-- Maintainer  :  stefan.berthold@gmx.net
+-- Stability   :  unstable
+-- Portability :  GHC
+--
+-- This module specifies the default configuration values for SmallCaps.
+--
+-------------------------------------------------------------------------------
+
 module SmallCaps.Config where
 
 import            Data.Default    ( Default, def )
@@ -11,24 +25,18 @@ import            SmallCaps.LaTeX ( LaTeX, LaTeXElement
                                   , name
                                   )
 
-data StopState
-  = None
-  | NewLine
-  | Stop
-  | NewSentence
-  deriving (Show, Eq)
-
-instance Default StopState where
-  def = NewSentence
+-- ** Subparser data type
 
 type SubParser a = ParserState -> a -> Either String (a, ParserState)
 
+-- ** Parser user state
+
 data ParserState = ParserState
-  { config  :: Config
-  , inputs  :: Map FilePath (FilePath, LaTeX)
-  , profile :: Map Text Config
-  , stop    :: StopState
-  , ignore  :: Bool
+  { config  :: Config                           -- ^ configuration
+  , inputs  :: Map FilePath (FilePath, LaTeX)   -- ^ additional input files
+  , profile :: Map Text Config                  -- ^ configuration preset list
+  , stop    :: StopState                        -- ^ stop state
+  , ignore  :: Bool                             -- ^ skip on/off
   }
 
 instance Default ParserState where
@@ -45,15 +53,17 @@ instance Default ParserState where
     , ignore  = False
     }
 
+-- ** Configuration data type
+
 data Config = Config
-  { periodChars   :: [Char]                     -- signs recognised as periods
-  , search        :: LaTeXElement -> Bool       -- search block/macro/environment for caps
-  , isolate       :: LaTeXElement -> Maybe Text -- open an isolated state for a block/macro/environment; returns config name
-  , skip          :: LaTeXElement -> Bool       -- skip searching for the rest of the block etc.
-  , unskip        :: LaTeXElement -> Bool       -- undo skip, e.g., at \normalsize when skipping \small
-  , eos           :: LaTeXElement -> Bool       -- end of sentence, start with new one
-  , replace       :: Text -> Text               -- formatting for small caps
-  , inlineConfig  :: Bool                       -- dynamic reconfiguration in LaTeX comments
+  { periodChars   :: [Char]                     -- ^ signs recognised as periods
+  , search        :: LaTeXElement -> Bool       -- ^ search block/macro/environment for caps
+  , isolate       :: LaTeXElement -> Maybe Text -- ^ open an isolated state for a block/macro/environment; returns config name
+  , skip          :: LaTeXElement -> Bool       -- ^ skip searching for the rest of the block etc.
+  , unskip        :: LaTeXElement -> Bool       -- ^ undo skip, e.g., at @\normalsize@ when skipping @\small@
+  , eos           :: LaTeXElement -> Bool       -- ^ end of sentence, start with new one
+  , replace       :: Text -> Text               -- ^ formatting for small caps
+  , inlineConfig  :: Bool                       -- ^ dynamic reconfiguration in LaTeX comments
   }
 
 instance Default Config where
@@ -98,14 +108,16 @@ defaultEos = after
 defaultReplace :: Text -> Text
 defaultReplace caps = pack "{\\small " `append` snoc caps '}'
 
--- combinator for plugin construction
+-- ** Configuration presets
+
+-- | combinator for plugin construction
 (&&&) :: (LaTeXElement -> Bool) -> (LaTeXElement -> Bool) -> LaTeXElement -> Bool
 (&&&) fun gun element = fun element && gun element
 
 (|||) :: (LaTeXElement -> Bool) -> (LaTeXElement -> Bool) -> LaTeXElement -> Bool
 (|||) fun gun element = fun element || gun element
 
--- clean configuration, all substitutions off
+-- | clean configuration, all substitutions off
 clean :: Config
 clean = Config
   { periodChars   = []
@@ -118,7 +130,7 @@ clean = Config
   , inlineConfig  = True
   }
 
--- conservative configuration
+-- | conservative configuration
 conservative :: Config
 conservative = def
   { search        = whitelist []
@@ -126,11 +138,11 @@ conservative = def
   , eos           = after ["\\par"]
   }
 
--- busy configuration
+-- | busy configuration
 busy :: Config
 busy = conservative { search = blacklist [] }
 
--- abstract/small font configuration
+-- | abstract/small font configuration
 small :: Config
 small = def
   { skip    = (not . after ["\\small"])       &&& (after ["\\normalsize"] ||| defaultSkip)
@@ -157,5 +169,17 @@ findConfigName name' = foldr fun Nothing
   where fun (n,c) Nothing | pack n == name' = Just (pack c)
                           | otherwise       = Nothing
         fun _     x                         = x
+
+-- ** Stop state
+
+data StopState
+  = None          -- ^ within a sentence
+  | NewLine       -- ^ one newline read
+  | Stop          -- ^ stop character read
+  | NewSentence   -- ^ begin of a new sentence
+  deriving (Show, Eq)
+
+instance Default StopState where
+  def = NewSentence
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

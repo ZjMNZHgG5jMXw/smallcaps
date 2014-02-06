@@ -1,3 +1,17 @@
+-------------------------------------------------------------------------------
+-- |
+-- Module      :  SmallCaps.PrintableParser
+-- Copyright   :  (c) Stefan Berthold 2014
+-- License     :  BSD3-style (see LICENSE)
+--
+-- Maintainer  :  stefan.berthold@gmx.net
+-- Stability   :  unstable
+-- Portability :  GHC
+--
+-- This modules specifies parsers on printable 'Text'.
+--
+-------------------------------------------------------------------------------
+
 module SmallCaps.PrintableParser where
 
 import            Prelude      hiding ( head, tail, null )
@@ -14,6 +28,8 @@ type Parser = GenParser ParserState
 
 runPrintableWith :: SubParser Text
 runPrintableWith state = either (Left . show) Right . runParser (printable >>= \a -> fmap ((,) a) getState) state ""
+
+-- ** Parsers
 
 printable :: Parser Text
 printable = fmap (intercalate (pack "")) $ many $ printableElement
@@ -55,6 +71,8 @@ newline = fmap singleton $ P.newline >>= pass inc
 misc :: Parser Text
 misc = fmap singleton $ anyChar >>= pass reset
 
+-- ** State modification
+
 pass :: Parser b -> a -> Parser a
 pass m a = m >> return a
 
@@ -79,6 +97,8 @@ uc :: Text -> StopState -> (Text, Text)
 uc text state
   | state == NewSentence  = (singleton (head text), tail text)
   | otherwise             = (empty, text)
+
+-- ** Text modification
 
 replace' :: Config -> Text -> Text
 replace' conf text

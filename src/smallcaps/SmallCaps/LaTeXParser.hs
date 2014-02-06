@@ -1,3 +1,17 @@
+-------------------------------------------------------------------------------
+-- |
+-- Module      :  SmallCaps.LaTeXParser
+-- Copyright   :  (c) Stefan Berthold 2014
+-- License     :  BSD3-style (see LICENSE)
+--
+-- Maintainer  :  stefan.berthold@gmx.net
+-- Stability   :  unstable
+-- Portability :  GHC
+--
+-- This modules specifies parsers on 'LaTeXElement' token streams.
+--
+-------------------------------------------------------------------------------
+
 module SmallCaps.LaTeXParser where
 
 import Text.Parsec      ( Parsec, SourcePos, tokenPrim )
@@ -10,6 +24,8 @@ import SmallCaps.LaTeX  ( LaTeX, LaTeXElement
                         )
 
 type Parser u = Parsec LaTeX u
+
+-- ** Parsers
 
 satisfy :: (LaTeXElement -> Bool) -> Parser u LaTeXElement
 satisfy pass = tokenPrim show updpos get where
@@ -39,6 +55,8 @@ anyBlock = satisfy isBlock
 
 anyComment :: Parser u LaTeXElement
 anyComment = satisfy isComment
+
+-- ** Helpers
 
 updpos :: SourcePos -> t -> s -> SourcePos
 updpos pos _ _ = pos

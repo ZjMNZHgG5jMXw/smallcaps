@@ -1,3 +1,18 @@
+-------------------------------------------------------------------------------
+-- |
+-- Module      :  SmallCaps.ConfigParser
+-- Copyright   :  (c) Stefan Berthold 2014
+-- License     :  BSD3-style (see LICENSE)
+--
+-- Maintainer  :  stefan.berthold@gmx.net
+-- Stability   :  unstable
+-- Portability :  GHC
+--
+-- This module specifies inline configuration parsers. The parsers are also
+-- used for the arguments in the command line interface.
+--
+-------------------------------------------------------------------------------
+
 module SmallCaps.ConfigParser where
 
 import Prelude hiding ( lex, takeWhile )
@@ -30,17 +45,17 @@ reconfiguration state = preamble >> msum
   , fmap Right  $ eosMain     conf
   ] where conf = config state
 
--- Lexer
+-- ** Lexer
 
 lex :: Parser a -> Parser a
 lex p = skipSpace >> p
 
--- Preamble
+-- ** Preamble
 
 preamble :: Parser Text
 preamble = char '%' >> lex (asciiCI (pack "smallcaps"))
 
--- Restore profile
+-- ** Restore profile
 
 profileMain :: Map Text Config -> Parser Config
 profileMain ps = profilePre >> profileName ps
@@ -51,7 +66,7 @@ profilePre = lex (asciiCI (pack "reset") `mplus` asciiCI (pack "restore")) >> le
 profileName :: Map Text Config -> Parser Config
 profileName ps = maybe (fail "profile not found") return . flip Map.lookup ps =<< lex (takeWhile1 isAlphaNum)
 
--- Store profile
+-- ** Store profile
 
 storeMain :: Config -> Parser (Text, Config)
 storeMain = (storePre >>) . storeName
@@ -62,7 +77,7 @@ storePre = lex (asciiCI (pack "store")) >> lex (asciiCI (pack "profile"))
 storeName :: Config -> Parser (Text, Config)
 storeName conf = fmap (flip (,) conf) (lex $ takeWhile1 isAlphaNum)
 
--- Period chars
+-- ** Period chars
 
 periodMain :: Config -> Parser Config
 periodMain = (periodPre >>) . periodSigns
@@ -73,7 +88,7 @@ periodPre = lex (asciiCI (pack "periods")) >> lex (asciiCI (pack "are"))
 periodSigns :: Config -> Parser Config
 periodSigns conf = lex (takeWhile1 isPunctuation) >>= \s -> return $ conf { periodChars = unpack s }
 
--- Replace string
+-- ** Replace string
 
 replaceMain :: Config -> Parser Config
 replaceMain conf = replacePre >> msum
@@ -98,7 +113,7 @@ replaceMacro conf style
   | otherwise       = fun (\macro caps -> cons '\\' macro `append` cons '{' (snoc caps '}'))
   where fun gun = lex $ macroBegin >> macroName >>= \macro -> return $ conf { replace = gun macro }
 
--- Search filter
+-- ** Search filter
 
 searchMain :: Config -> Parser Config
 searchMain = (searchPre >>) . searchList
@@ -109,7 +124,7 @@ searchPre = lex $ asciiCI (pack "search")
 searchList :: Config -> Parser Config
 searchList conf = list' (search conf) >>= \fun -> return $ conf { search = fun }
 
--- Isolate filter
+-- ** Isolate filter
 
 isolateMain :: Config -> Parser Config
 isolateMain = (isolatePre >>) . isolateList
@@ -120,7 +135,7 @@ isolatePre = lex $ asciiCI (pack "isolate")
 isolateList :: Config -> Parser Config
 isolateList conf = iList (isolate conf) >>= \fun -> return $ conf { isolate = fun }
 
--- Skip filter
+-- ** Skip filter
 
 skipMain :: Config -> Parser Config
 skipMain = (skipPre >>) . skipList
@@ -131,7 +146,7 @@ skipPre = lex $ asciiCI (pack "skip")
 skipList :: Config -> Parser Config
 skipList conf = list (skip conf) >>= \fun -> return $ conf { skip = fun }
 
--- Unskip filter
+-- ** Unskip filter
 
 unskipMain :: Config -> Parser Config
 unskipMain = (unskipPre >>) . unskipList
@@ -142,7 +157,7 @@ unskipPre = lex $ asciiCI (pack "unskip")
 unskipList :: Config -> Parser Config
 unskipList conf = list (unskip conf) >>= \fun -> return $ conf { unskip = fun }
 
--- End of sentence filter
+-- ** End of sentence filter
 
 eosMain :: Config -> Parser Config
 eosMain = (eosPre >>) . eosList
@@ -153,7 +168,7 @@ eosPre = lex $ asciiCI (pack "eos")
 eosList :: Config -> Parser Config
 eosList conf = list (eos conf) >>= \fun -> return $ conf { eos = fun }
 
--- Macro/environment name list parser
+-- ** Macro/environment name list parser
 
 list :: (LaTeXElement -> Bool) -> Parser (LaTeXElement -> Bool)
 list fun = msum [listBlack fun, listWhite fun, listConstAll, listConstNone]
@@ -179,7 +194,7 @@ listConstNone = lex (char '/') >> return (const False)
 listConstNone' :: Parser (LaTeXElement -> Bool)
 listConstNone' = lex (char '/') >> return (whitelist [])
 
--- Isolate list parser
+-- ** Isolate list parser
 
 iList :: (LaTeXElement -> Maybe Text) -> Parser (LaTeXElement -> Maybe Text)
 iList fun = msum [iListBlack fun, iListWhite fun, iListConstAll, iListConstNone]
@@ -212,7 +227,7 @@ iListConstNone = do
   _   <- lex $ char '/'
   return $ const Nothing
 
--- list item parser
+-- ** List item parser
 
 listItems :: Parser [Text]
 listItems = do

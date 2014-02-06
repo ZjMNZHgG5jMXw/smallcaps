@@ -1,3 +1,17 @@
+-------------------------------------------------------------------------------
+-- |
+-- Module      :  SmallCaps.TeX
+-- Copyright   :  (c) Stefan Berthold 2014
+-- License     :  BSD3-style (see LICENSE)
+--
+-- Maintainer  :  stefan.berthold@gmx.net
+-- Stability   :  unstable
+-- Portability :  GHC
+--
+-- This modules specifies the data types 'TeX' and 'TeXElement'.
+--
+-------------------------------------------------------------------------------
+
 module SmallCaps.TeX where
 
 import Data.Text ( Text, empty, intercalate )
@@ -11,6 +25,8 @@ data TeXElement
   | Block TeX
   | Comment Text
   deriving (Eq, Show)
+
+-- ** Query
 
 isPrintable :: TeXElement -> Bool
 isPrintable (Printable _) = True
@@ -33,6 +49,8 @@ isMacroLetter c = isLetter c || c == '@'
 
 isMacroSign :: Char -> Bool
 isMacroSign c = isPrint c && not (isNumber c || isSpace c)
+
+-- ** Accessors
 
 content :: TeXElement -> Text
 content (Printable text)  = text

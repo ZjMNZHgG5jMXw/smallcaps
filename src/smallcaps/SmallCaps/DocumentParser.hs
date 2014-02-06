@@ -1,3 +1,18 @@
+-------------------------------------------------------------------------------
+-- |
+-- Module      :  SmallCaps.DocumentParser
+-- Copyright   :  (c) Stefan Berthold 2014
+-- License     :  BSD3-style (see LICENSE)
+--
+-- Maintainer  :  stefan.berthold@gmx.net
+-- Stability   :  unstable
+-- Portability :  GHC
+--
+-- This module specifies the parsers that change uppercase letters in smaller
+-- uppercase letters. It calls the functions from "SmallCaps.PrintableParser".
+--
+-------------------------------------------------------------------------------
+
 module SmallCaps.DocumentParser where
 
 import            Text.Parsec                 ( runParser, getState, modifyState, putState, many )
@@ -18,6 +33,8 @@ import            SmallCaps.ConfigParser      ( reconfigure )
 
 type Parser = L.Parser ParserState
 
+-- ** Documents
+
 runDocument :: Config -> LaTeX -> Either String LaTeX
 runDocument conf = either Left (Right . fst) . runDocumentWith (def { config = conf })
 
@@ -32,6 +49,8 @@ runDocumentWith state = either (Left . show) Right . runParser (stateAnd documen
           a <- p
           s <- getState
           return (a,s)
+
+-- ** Subdocument
 
 runSubDocument :: SubParser a -> a -> Parser a 
 runSubDocument fun x = do
@@ -56,6 +75,8 @@ decideSub element fun x = do
     ( flip (flip isolateSubDocument fun) x )
     $ maybe Nothing (flip Map.lookup (profile state))
     $ isolate conf element
+
+-- ** Parsers
 
 document :: Parser LaTeX
 document = many documentElement

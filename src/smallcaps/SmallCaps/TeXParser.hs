@@ -1,3 +1,18 @@
+-------------------------------------------------------------------------------
+-- |
+-- Module      :  SmallCaps.TeXParser
+-- Copyright   :  (c) Stefan Berthold 2014
+-- License     :  BSD3-style (see LICENSE)
+--
+-- Maintainer  :  stefan.berthold@gmx.net
+-- Stability   :  unstable
+-- Portability :  GHC
+--
+-- This modules specifies parsers that consume 'Text' and produce a
+-- 'TeXElement' token stream.
+--
+-------------------------------------------------------------------------------
+
 module SmallCaps.TeXParser where
 
 import Data.Attoparsec.Text       ( Parser, satisfy, char, takeWhile1, takeTill, endOfLine, isEndOfLine )
@@ -15,9 +30,13 @@ tex = many' $ msum
   , block
   ]
 
+-- ** Printable
+
 printable :: Parser TeXElement
 printable = fmap Printable $ takeWhile1 printableChar
   where printableChar = not . flip elem "\\{}%"
+
+-- ** Comment
 
 comment :: Parser TeXElement
 comment = fmap Comment $ do
@@ -26,21 +45,16 @@ comment = fmap Comment $ do
   option () endOfLine
   return (cons b (snoc c '\n'))
 
+commentChar :: Parser Char
+commentChar = char '%'
+
+-- ** Macro
+
 macro :: Parser TeXElement
 macro = fmap Macro $ do
   b <- macroBegin
   n <- macroName
   return (cons b n)
-
-block :: Parser TeXElement
-block = fmap Block $ do
-  _ <- blockBegin
-  c <- tex
-  _ <- blockEnd
-  return c
-
-commentChar :: Parser Char
-commentChar = char '%'
 
 macroBegin :: Parser Char
 macroBegin = char '\\'
@@ -51,14 +65,25 @@ macroName = macroLabel `mplus` tt macroSign
 macroLabel :: Parser Text
 macroLabel = takeWhile1 isMacroLetter
 
+macroSign :: Parser Char
+macroSign = satisfy isMacroSign
+
+-- ** Block
+
+block :: Parser TeXElement
+block = fmap Block $ do
+  _ <- blockBegin
+  c <- tex
+  _ <- blockEnd
+  return c
+
 blockBegin :: Parser Char
 blockBegin = char '{'
 
 blockEnd :: Parser Char
 blockEnd = char '}'
 
-macroSign :: Parser Char
-macroSign = satisfy isMacroSign
+-- ** Helpers
 
 tt :: Parser Char -> Parser Text
 tt = fmap singleton

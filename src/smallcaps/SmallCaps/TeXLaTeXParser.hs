@@ -1,3 +1,18 @@
+-------------------------------------------------------------------------------
+-- |
+-- Module      :  SmallCaps.TeXLaTeXParser
+-- Copyright   :  (c) Stefan Berthold 2014
+-- License     :  BSD3-style (see LICENSE)
+--
+-- Maintainer  :  stefan.berthold@gmx.net
+-- Stability   :  unstable
+-- Portability :  GHC
+--
+-- This modules specifies parsers that consume a 'TeXElement' token stream
+-- and produce a 'LaTeXElement' token stream.
+--
+-------------------------------------------------------------------------------
+
 module SmallCaps.TeXLaTeXParser where
 
 import Text.Parsec                    ( ParsecT, runParserT, SourcePos, ParseError, tokenPrim, many )
@@ -23,6 +38,8 @@ parse = (first (either (const []) id) .) . parse'
 parse' :: Parser a -> TeX -> (Either ParseError a, [Text])
 parse' = (runWriter .) . flip (flip runParserT ()) ""
 
+-- ** Parser
+
 latex :: Parser LaTeX
 latex = many $ msum
   [ environment
@@ -30,7 +47,7 @@ latex = many $ msum
   , latexElement
   ]
 
--- TeXElement
+-- *** TeXElement
 
 satisfy :: (TeXElement -> Bool) -> Parser TeXElement
 satisfy pass = tokenPrim show updpos get where
@@ -40,7 +57,7 @@ satisfy pass = tokenPrim show updpos get where
 skipMacro :: Text -> Parser TeXElement
 skipMacro name' = satisfy (liftM2 (&&) isMacro ((name' ==) . content))
 
--- LaTeXElement
+-- *** LaTeXElement
 
 translate :: TeXElement -> (LaTeXElement, [Text])
 translate x
@@ -90,6 +107,8 @@ endEnv = macroTextArg (pack "\\end")
 
 isEndEnv :: TeXElement -> Bool
 isEndEnv x = isMacro x && content x == pack "\\end"
+
+-- ** Helpers
 
 updpos :: SourcePos -> t -> s -> SourcePos
 updpos pos _ _ = pos
