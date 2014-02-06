@@ -2,12 +2,12 @@ module Main where
 
 import System.Exit                        ( ExitCode )
 import Data.Text                          ( cons, pack, append )
-import qualified Data.Default as Default  ( def )
+import qualified Data.Default  as Default ( def )
 import Data.Maybe                         ( isJust )
 
-import Data.LaTeX                         ( LaTeXElement (..) )
-import Data.Config                        ( ParserState (..), Config (..), clean, isolateWith )
-import Text.ConfigParser                  ( reconfigure )
+import SmallCaps.LaTeX                    ( LaTeXElement (..) )
+import SmallCaps.Config                   ( ParserState (..), Config (..), clean, isolateWith )
+import SmallCaps.ConfigParser             ( reconfigure )
 
 import Tests                              ( failOn )
 

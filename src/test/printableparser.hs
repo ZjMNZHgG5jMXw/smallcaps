@@ -1,13 +1,13 @@
 module Main where
 
-import System.Exit          ( ExitCode )
-import Data.Text            ( Text, pack )
-import Data.Default         ( def )
+import System.Exit                ( ExitCode )
+import Data.Text                  ( Text, pack )
+import Data.Default               ( def )
 
-import Data.Config          ( ParserState (..), StopState (..) )
-import Text.PrintableParser ( runPrintableWith )
+import SmallCaps.Config           ( ParserState (..), StopState (..) )
+import SmallCaps.PrintableParser  ( runPrintableWith )
 
-import Tests                ( failOn )
+import Tests                      ( failOn )
 
 main :: IO ExitCode
 main = failOn $ failed checks

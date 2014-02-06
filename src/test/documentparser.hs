@@ -1,14 +1,14 @@
 module Main where
 
-import System.Exit          ( ExitCode )
-import Data.Text            ( pack )
-import Data.Default         ( def )
+import System.Exit              ( ExitCode )
+import Data.Text                ( pack )
+import Data.Default             ( def )
 
-import Data.LaTeX           ( LaTeX, LaTeXElement (..) )
-import Data.Config          ( Config (..), whitelist, after, isolateWith, clean )
-import Text.DocumentParser  ( runDocument )
+import SmallCaps.LaTeX          ( LaTeX, LaTeXElement (..) )
+import SmallCaps.Config         ( Config (..), whitelist, after, isolateWith, clean )
+import SmallCaps.DocumentParser ( runDocument )
 
-import Tests                ( failOn )
+import Tests                    ( failOn )
 
 type Check = ([LaTeXElement], (Config, [LaTeXElement]))
 

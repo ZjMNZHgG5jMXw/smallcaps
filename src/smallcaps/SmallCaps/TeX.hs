@@ -1,4 +1,4 @@
-module Data.TeX where
+module SmallCaps.TeX where
 
 import Data.Text ( Text, empty, intercalate )
 import Data.Char ( isPrint, isNumber, isSpace, isLetter )

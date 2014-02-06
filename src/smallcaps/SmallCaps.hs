@@ -1,32 +1,32 @@
 module SmallCaps where
 
-import System.IO              ( Handle, hClose, openFile, openTempFile, IOMode (..), stdin, stdout )
-import Data.Text.IO           ( hGetContents, hPutStr )
-import System.FilePath        ( (</>), takeDirectory, takeBaseName, makeRelative, hasExtension, replaceExtension )
-import System.Directory       ( renameFile, canonicalizePath, makeRelativeToCurrentDirectory, createDirectoryIfMissing )
-import System.Environment     ( getProgName, getArgs )
-import System.Exit            ( exitFailure )
-import System.Console.GetOpt  ( OptDescr ( Option ), ArgDescr ( NoArg, ReqArg ), ArgOrder ( Permute ), getOpt, usageInfo )
-import Data.Version           ( Version ( Version ), versionBranch, versionTags, showVersion )
-import Data.Default           ( def )
-import Data.Attoparsec.Text   ( parseOnly )
-import Data.Text              ( Text, pack, unpack )
-import Data.Map               ( Map )
-import qualified Data.Map as Map ( empty, member, insert, elems )
-import Control.Monad          ( foldM )
+import System.IO                  ( Handle, hClose, openFile, openTempFile, IOMode (..), stdin, stdout )
+import Data.Text.IO               ( hGetContents, hPutStr )
+import System.FilePath            ( (</>), takeDirectory, takeBaseName, makeRelative, hasExtension, replaceExtension )
+import System.Directory           ( renameFile, canonicalizePath, makeRelativeToCurrentDirectory, createDirectoryIfMissing )
+import System.Environment         ( getProgName, getArgs )
+import System.Exit                ( exitFailure )
+import System.Console.GetOpt      ( OptDescr ( Option ), ArgDescr ( NoArg, ReqArg ), ArgOrder ( Permute ), getOpt, usageInfo )
+import Data.Version               ( Version ( Version ), versionBranch, versionTags, showVersion )
+import Data.Default               ( def )
+import Data.Attoparsec.Text       ( parseOnly )
+import Data.Text                  ( Text, pack, unpack )
+import Data.Map                   ( Map )
+import qualified Data.Map  as Map ( empty, member, insert, elems )
+import Control.Monad              ( foldM )
 
-import Data.Config            ( Config (..), conservative, busy, clean )
-import Data.LaTeX             ( LaTeX, unlatex )
-import Text.TeXParser         ( tex )
-import Text.TeXLaTeXParser    ( parse, latex )
-import Text.DocumentParser    ( runDocument, runDocument' )
-import Text.ConfigParser      ( replaceMacro, searchList, isolateList, skipList, unskipList, eosList )
-import qualified Text.ConfigParser as ConfigParser ( Style ( .. ) )
+import SmallCaps.Config           ( Config (..), conservative, busy, clean )
+import SmallCaps.LaTeX            ( LaTeX, unlatex )
+import SmallCaps.TeXParser        ( tex )
+import SmallCaps.TeXLaTeXParser   ( parse, latex )
+import SmallCaps.DocumentParser   ( runDocument, runDocument' )
+import SmallCaps.ConfigParser     ( replaceMacro, searchList, isolateList, skipList, unskipList, eosList )
+import qualified SmallCaps.ConfigParser as ConfigParser ( Style ( .. ) )
 
 version :: Version
 version = Version
-  { versionBranch = [0,2,2]
-  , versionTags   = ["pre"]
+  { versionBranch = [0,3]
+  , versionTags   = []
   }
 
 -- pure

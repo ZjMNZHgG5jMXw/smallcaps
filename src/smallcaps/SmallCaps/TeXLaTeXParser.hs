@@ -1,19 +1,19 @@
-module Text.TeXLaTeXParser where
+module SmallCaps.TeXLaTeXParser where
 
-import Text.Parsec                ( ParsecT, runParserT, SourcePos, ParseError, tokenPrim, many )
-import Data.Text                  ( Text, empty, pack, unpack, intercalate )
-import Control.Monad              ( liftM2, mplus, msum )
-import Control.Monad.Trans.Writer ( WriterT, Writer, runWriter, tell )
-import Control.Monad.Trans.Class  ( lift )
-import Control.Arrow              ( first )
+import Text.Parsec                    ( ParsecT, runParserT, SourcePos, ParseError, tokenPrim, many )
+import Data.Text                      ( Text, empty, pack, unpack, intercalate )
+import Control.Monad                  ( liftM2, mplus, msum )
+import Control.Monad.Trans.Writer     ( WriterT, Writer, runWriter, tell )
+import Control.Monad.Trans.Class      ( lift )
+import Control.Arrow                  ( first )
 
-import Data.TeX                   ( TeX, TeXElement
-                                  , isPrintable, isMacro, isBlock, isComment
-                                  , content
-                                  )
-import qualified Data.TeX   as T  ( body )
-import Data.LaTeX                 ( LaTeX, LaTeXElement (..), name, printable )
-import qualified Data.LaTeX as L  ( body )
+import SmallCaps.TeX                  ( TeX, TeXElement
+                                      , isPrintable, isMacro, isBlock, isComment
+                                      , content
+                                      )
+import qualified SmallCaps.TeX   as T ( body )
+import SmallCaps.LaTeX                ( LaTeX, LaTeXElement (..), name, printable )
+import qualified SmallCaps.LaTeX as L ( body )
 
 type Parser       = ParsecT TeX () (Writer [Text])
 

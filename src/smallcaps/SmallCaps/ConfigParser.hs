@@ -1,4 +1,4 @@
-module Text.ConfigParser where
+module SmallCaps.ConfigParser where
 
 import Prelude hiding ( lex, takeWhile )
 
@@ -10,9 +10,9 @@ import Data.Attoparsec.Text       ( Parser, parseOnly, char, takeWhile1, asciiCI
 import Data.Attoparsec.Combinator ( many' )
 import Control.Monad              ( mplus, msum )
 
-import Data.LaTeX                 ( LaTeXElement, name )
-import Data.Config                ( ParserState (..), Config (..), blacklist, whitelist )
-import Text.TeXParser             ( macroBegin, macroName )
+import SmallCaps.LaTeX            ( LaTeXElement, name )
+import SmallCaps.Config           ( ParserState (..), Config (..), blacklist, whitelist )
+import SmallCaps.TeXParser        ( macroBegin, macroName )
 
 reconfigure :: ParserState -> Text -> Either (Text, Config) Config
 reconfigure state = either (const (Right (config state))) id . parseOnly (reconfiguration state)

@@ -1,13 +1,13 @@
 module Main where
 
-import System.Exit                        ( ExitCode )
-import Data.Text                          ( Text, pack )
-import qualified Data.Set as Set          ( fromList )
+import System.Exit                ( ExitCode )
+import Data.Text                  ( Text, pack )
+import qualified Data.Set  as Set ( fromList )
 
-import Data.TeX                           ( TeX, TeXElement (..) )
-import Text.TeXLaTeXParser                ( parse, latex )
+import SmallCaps.TeX              ( TeX, TeXElement (..) )
+import SmallCaps.TeXLaTeXParser   ( parse, latex )
 
-import Tests                              ( failOn )
+import Tests                      ( failOn )
 
 main :: IO ExitCode
 main = failOn $ failed checks

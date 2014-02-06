@@ -1,4 +1,4 @@
-module Data.Config where
+module SmallCaps.Config where
 
 import            Data.Default    ( Default, def )
 import            Data.Text       ( Text, pack, snoc, append )
@@ -6,7 +6,7 @@ import            Data.Map        ( Map )
 import qualified  Data.Map as Map ( empty, fromList )
 import            Control.Monad   ( liftM2 )
 
-import            Data.LaTeX      ( LaTeX, LaTeXElement
+import            SmallCaps.LaTeX ( LaTeX, LaTeXElement
                                   , isPrintable, isMacro, isEnvironment, isBlock, isComment
                                   , name
                                   )

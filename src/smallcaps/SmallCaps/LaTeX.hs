@@ -1,4 +1,4 @@
-module Data.LaTeX where
+module SmallCaps.LaTeX where
 
 import Data.Text ( Text, empty, singleton, pack, intercalate )
 

@@ -1,4 +1,4 @@
-module Text.PrintableParser where
+module SmallCaps.PrintableParser where
 
 import            Prelude      hiding ( head, tail, null )
 
@@ -8,7 +8,7 @@ import            Text.Parsec.Text    ( GenParser )
 import            Data.Text           ( Text, null, empty, singleton, pack, head, tail, append, intercalate )
 import            Control.Monad       ( msum )
 
-import            Data.Config         ( Config (..), StopState (..), ParserState (..), SubParser )
+import            SmallCaps.Config    ( Config (..), StopState (..), ParserState (..), SubParser )
 
 type Parser = GenParser ParserState
 

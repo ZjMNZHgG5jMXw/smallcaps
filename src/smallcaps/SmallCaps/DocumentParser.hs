@@ -1,20 +1,20 @@
-module Text.DocumentParser where
+module SmallCaps.DocumentParser where
 
-import            Text.Parsec           ( runParser, getState, modifyState, putState, many )
-import            Control.Monad         ( msum )
-import            Control.Arrow         ( second )
-import            Data.Default          ( def )
-import            Data.Text             ( empty, pack, intercalate, unpack )
-import            Data.Map              ( Map )
-import qualified  Data.Map       as Map ( insert, update, lookup )
+import            Text.Parsec                 ( runParser, getState, modifyState, putState, many )
+import            Control.Monad               ( msum )
+import            Control.Arrow               ( second )
+import            Data.Default                ( def )
+import            Data.Text                   ( empty, pack, intercalate, unpack )
+import            Data.Map                    ( Map )
+import qualified  Data.Map             as Map ( insert, update, lookup )
 
-import            Data.LaTeX            ( LaTeX, LaTeXElement (..), name, body, content )
-import qualified  Data.LaTeX   as LaTeX ( printable )
-import qualified  Text.LaTeXParser as L ( Parser )
-import            Text.LaTeXParser      ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyComment )
-import            Data.Config           ( ParserState (..), Config (..), StopState (..), SubParser )
-import            Text.PrintableParser  ( runPrintableWith )
-import            Text.ConfigParser     ( reconfigure )
+import            SmallCaps.LaTeX             ( LaTeX, LaTeXElement (..), name, body, content )
+import qualified  SmallCaps.LaTeX    as LaTeX ( printable )
+import qualified  SmallCaps.LaTeXParser  as L ( Parser )
+import            SmallCaps.LaTeXParser       ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyComment )
+import            SmallCaps.Config            ( ParserState (..), Config (..), StopState (..), SubParser )
+import            SmallCaps.PrintableParser   ( runPrintableWith )
+import            SmallCaps.ConfigParser      ( reconfigure )
 
 type Parser = L.Parser ParserState
 

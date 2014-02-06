@@ -1,13 +1,13 @@
-module Text.LaTeXParser where
+module SmallCaps.LaTeXParser where
 
-import Text.Parsec    ( Parsec, SourcePos, tokenPrim )
-import Data.Text      ( Text )
-import Control.Monad  ( liftM2 )
+import Text.Parsec      ( Parsec, SourcePos, tokenPrim )
+import Data.Text        ( Text )
+import Control.Monad    ( liftM2 )
 
-import Data.LaTeX     ( LaTeX, LaTeXElement
-                      , isMacro, isEnvironment, isBlock, isPrintable, isComment
-                      , name, content
-                      )
+import SmallCaps.LaTeX  ( LaTeX, LaTeXElement
+                        , isMacro, isEnvironment, isBlock, isPrintable, isComment
+                        , name, content
+                        )
 
 type Parser u = Parsec LaTeX u
 

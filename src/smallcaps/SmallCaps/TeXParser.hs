@@ -1,11 +1,11 @@
-module Text.TeXParser where
+module SmallCaps.TeXParser where
 
 import Data.Attoparsec.Text       ( Parser, satisfy, char, takeWhile1, takeTill, endOfLine, isEndOfLine )
 import Data.Attoparsec.Combinator ( many', option )
 import Data.Text                  ( Text, singleton, cons, snoc )
 import Control.Monad              ( msum, mplus )
 
-import Data.TeX                   ( TeX, TeXElement (..), isMacroLetter, isMacroSign )
+import SmallCaps.TeX              ( TeX, TeXElement (..), isMacroLetter, isMacroSign )
 
 tex :: Parser TeX
 tex = many' $ msum
