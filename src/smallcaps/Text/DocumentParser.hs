@@ -12,7 +12,7 @@ import            Data.LaTeX            ( LaTeX, LaTeXElement (..), name, body, 
 import qualified  Data.LaTeX   as LaTeX ( printable )
 import qualified  Text.LaTeXParser as L ( Parser )
 import            Text.LaTeXParser      ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyComment )
-import            Data.Config           ( ParserState (..), Config (..), SubParser )
+import            Data.Config           ( ParserState (..), Config (..), StopState (..), SubParser )
 import            Text.PrintableParser  ( runPrintableWith )
 import            Text.ConfigParser     ( reconfigure )
 
@@ -83,6 +83,7 @@ macro = do
   implySkip x
   implyInput x
   latex <- decideSub x runDocumentWith (body x)
+  resetNewLine
   implyEos x
   return $ Macro (name x) latex
 
@@ -91,6 +92,7 @@ environment = do
   x <- anyEnvironment
   implySkip x
   latex <- decideSub x runDocumentWith (body x)
+  resetNewLine
   implyEos x
   return $ Environment (name x) latex
 
@@ -99,6 +101,7 @@ block = do
   x <- anyBlock
   implySkip x
   latex <- decideSub x runDocumentWith (body x)
+  resetNewLine
   implyEos x
   return $ Block latex
 
@@ -140,5 +143,10 @@ implyEos element = do
   if eos conf element
   then modifyState (\state -> state { stop = def })
   else return ()
+
+resetNewLine :: Parser ()
+resetNewLine = modifyState (\state -> state { stop = modify (stop state) }) where
+  modify NewLine  = None
+  modify x        = x
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai
