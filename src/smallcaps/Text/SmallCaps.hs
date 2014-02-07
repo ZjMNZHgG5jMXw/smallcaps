@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- |
--- Module      :  SmallCaps
+-- Module      :  Text.SmallCaps
 -- Copyright   :  (c) Stefan Berthold 2014
 -- License     :  BSD3-style (see LICENSE)
 --
@@ -12,7 +12,7 @@
 --
 -------------------------------------------------------------------------------
 
-module SmallCaps where
+module Text.SmallCaps where
 
 import System.IO                  ( Handle, hClose, openFile, openTempFile, IOMode (..), stdin, stdout )
 import Data.Text.IO               ( hGetContents, hPutStr )
@@ -29,13 +29,13 @@ import Data.Map                   ( Map )
 import qualified Data.Map  as Map ( empty, member, insert, elems )
 import Control.Monad              ( foldM )
 
-import SmallCaps.Config           ( Config (..), conservative, busy, clean )
-import SmallCaps.LaTeX            ( LaTeX, unlatex )
-import SmallCaps.TeXParser        ( tex )
-import SmallCaps.TeXLaTeXParser   ( parse, latex )
-import SmallCaps.DocumentParser   ( runDocument, runDocument' )
-import SmallCaps.ConfigParser     ( replaceMacro, searchList, isolateList, skipList, unskipList, eosList )
-import qualified SmallCaps.ConfigParser as ConfigParser ( Style ( .. ) )
+import Text.SmallCaps.Config           ( Config (..), conservative, busy, clean )
+import Text.SmallCaps.LaTeX            ( LaTeX, unlatex )
+import Text.SmallCaps.TeXParser        ( tex )
+import Text.SmallCaps.TeXLaTeXParser   ( parse, latex )
+import Text.SmallCaps.DocumentParser   ( runDocument, runDocument' )
+import Text.SmallCaps.ConfigParser     ( replaceMacro, searchList, isolateList, skipList, unskipList, eosList )
+import qualified Text.SmallCaps.ConfigParser as ConfigParser ( Style ( .. ) )
 
 -- ** Meta information
 

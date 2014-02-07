@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- |
--- Module      :  SmallCaps.TeXParser
+-- Module      :  Text.SmallCaps.TeXParser
 -- Copyright   :  (c) Stefan Berthold 2014
 -- License     :  BSD3-style (see LICENSE)
 --
@@ -13,14 +13,14 @@
 --
 -------------------------------------------------------------------------------
 
-module SmallCaps.TeXParser where
+module Text.SmallCaps.TeXParser where
 
 import Data.Attoparsec.Text       ( Parser, satisfy, char, takeWhile1, takeTill, endOfLine, isEndOfLine )
 import Data.Attoparsec.Combinator ( many', option )
 import Data.Text                  ( Text, singleton, cons, snoc )
 import Control.Monad              ( msum, mplus )
 
-import SmallCaps.TeX              ( TeX, TeXElement (..), isMacroLetter, isMacroSign )
+import Text.SmallCaps.TeX         ( TeX, TeXElement (..), isMacroLetter, isMacroSign )
 
 tex :: Parser TeX
 tex = many' $ msum

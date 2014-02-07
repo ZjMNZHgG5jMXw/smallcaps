@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- |
--- Module      :  SmallCaps.DocumentParser
+-- Module      :  Text.SmallCaps.DocumentParser
 -- Copyright   :  (c) Stefan Berthold 2014
 -- License     :  BSD3-style (see LICENSE)
 --
@@ -9,11 +9,12 @@
 -- Portability :  GHC
 --
 -- This module specifies the parsers that change uppercase letters in smaller
--- uppercase letters. It calls the functions from "SmallCaps.PrintableParser".
+-- uppercase letters. It calls the functions from
+-- "Text.SmallCaps.PrintableParser".
 --
 -------------------------------------------------------------------------------
 
-module SmallCaps.DocumentParser where
+module Text.SmallCaps.DocumentParser where
 
 import            Text.Parsec                 ( runParser, getState, modifyState, putState, many )
 import            Control.Monad               ( msum )
@@ -23,13 +24,13 @@ import            Data.Text                   ( empty, pack, intercalate, unpack
 import            Data.Map                    ( Map )
 import qualified  Data.Map             as Map ( insert, update, lookup )
 
-import            SmallCaps.LaTeX             ( LaTeX, LaTeXElement (..), name, body, content )
-import qualified  SmallCaps.LaTeX    as LaTeX ( printable )
-import qualified  SmallCaps.LaTeXParser  as L ( Parser )
-import            SmallCaps.LaTeXParser       ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyComment )
-import            SmallCaps.Config            ( ParserState (..), Config (..), StopState (..), SubParser )
-import            SmallCaps.PrintableParser   ( runPrintableWith )
-import            SmallCaps.ConfigParser      ( reconfigure )
+import            Text.SmallCaps.LaTeX             ( LaTeX, LaTeXElement (..), name, body, content )
+import qualified  Text.SmallCaps.LaTeX    as LaTeX ( printable )
+import qualified  Text.SmallCaps.LaTeXParser  as L ( Parser )
+import            Text.SmallCaps.LaTeXParser       ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyComment )
+import            Text.SmallCaps.Config            ( ParserState (..), Config (..), StopState (..), SubParser )
+import            Text.SmallCaps.PrintableParser   ( runPrintableWith )
+import            Text.SmallCaps.ConfigParser      ( reconfigure )
 
 type Parser = L.Parser ParserState
 

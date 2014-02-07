@@ -4,9 +4,9 @@ import System.Exit              ( ExitCode )
 import Data.Text                ( pack )
 import Data.Default             ( def )
 
-import SmallCaps.LaTeX          ( LaTeX, LaTeXElement (..) )
-import SmallCaps.Config         ( Config (..), whitelist, after, isolateWith, clean )
-import SmallCaps.DocumentParser ( runDocument )
+import Text.SmallCaps.LaTeX          ( LaTeX, LaTeXElement (..) )
+import Text.SmallCaps.Config         ( Config (..), whitelist, after, isolateWith, clean )
+import Text.SmallCaps.DocumentParser ( runDocument )
 
 import Tests                    ( failOn )
 

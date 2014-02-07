@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- |
--- Module      :  SmallCaps.Config
+-- Module      :  Text.SmallCaps.Config
 -- Copyright   :  (c) Stefan Berthold 2014
 -- License     :  BSD3-style (see LICENSE)
 --
@@ -12,7 +12,7 @@
 --
 -------------------------------------------------------------------------------
 
-module SmallCaps.Config where
+module Text.SmallCaps.Config where
 
 import            Data.Default    ( Default, def )
 import            Data.Text       ( Text, pack, snoc, append )
@@ -20,10 +20,10 @@ import            Data.Map        ( Map )
 import qualified  Data.Map as Map ( empty, fromList )
 import            Control.Monad   ( liftM2 )
 
-import            SmallCaps.LaTeX ( LaTeX, LaTeXElement
-                                  , isPrintable, isMacro, isEnvironment, isBlock, isComment
-                                  , name
-                                  )
+import            Text.SmallCaps.LaTeX  ( LaTeX, LaTeXElement
+                                        , isPrintable, isMacro, isEnvironment, isBlock, isComment
+                                        , name
+                                        )
 
 -- ** Subparser data type
 

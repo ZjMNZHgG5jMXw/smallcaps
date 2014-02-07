@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- |
--- Module      :  SmallCaps.LaTeX
+-- Module      :  Text.SmallCaps.LaTeX
 -- Copyright   :  (c) Stefan Berthold 2014
 -- License     :  BSD3-style (see LICENSE)
 --
@@ -12,7 +12,7 @@
 --
 -------------------------------------------------------------------------------
 
-module SmallCaps.LaTeX where
+module Text.SmallCaps.LaTeX where
 
 import Data.Text ( Text, empty, singleton, pack, intercalate )
 

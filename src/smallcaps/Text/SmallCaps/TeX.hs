@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- |
--- Module      :  SmallCaps.TeX
+-- Module      :  Text.SmallCaps.TeX
 -- Copyright   :  (c) Stefan Berthold 2014
 -- License     :  BSD3-style (see LICENSE)
 --
@@ -12,7 +12,7 @@
 --
 -------------------------------------------------------------------------------
 
-module SmallCaps.TeX where
+module Text.SmallCaps.TeX where
 
 import Data.Text ( Text, empty, intercalate )
 import Data.Char ( isPrint, isNumber, isSpace, isLetter )

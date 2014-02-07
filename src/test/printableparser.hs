@@ -4,8 +4,8 @@ import System.Exit                ( ExitCode )
 import Data.Text                  ( Text, pack )
 import Data.Default               ( def )
 
-import SmallCaps.Config           ( ParserState (..), StopState (..) )
-import SmallCaps.PrintableParser  ( runPrintableWith )
+import Text.SmallCaps.Config          ( ParserState (..), StopState (..) )
+import Text.SmallCaps.PrintableParser ( runPrintableWith )
 
 import Tests                      ( failOn )
 

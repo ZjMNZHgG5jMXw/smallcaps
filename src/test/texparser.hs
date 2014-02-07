@@ -4,8 +4,8 @@ import System.Exit          ( ExitCode )
 import Data.Text            ( pack )
 import Data.Attoparsec.Text ( parseOnly )
 
-import SmallCaps.TeX        ( TeX, TeXElement (..) )
-import SmallCaps.TeXParser  ( tex )
+import Text.SmallCaps.TeX        ( TeX, TeXElement (..) )
+import Text.SmallCaps.TeXParser  ( tex )
 
 import Tests                ( failOn )
 

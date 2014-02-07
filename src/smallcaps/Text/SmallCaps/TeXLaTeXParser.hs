@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- |
--- Module      :  SmallCaps.TeXLaTeXParser
+-- Module      :  Text.SmallCaps.TeXLaTeXParser
 -- Copyright   :  (c) Stefan Berthold 2014
 -- License     :  BSD3-style (see LICENSE)
 --
@@ -13,7 +13,7 @@
 --
 -------------------------------------------------------------------------------
 
-module SmallCaps.TeXLaTeXParser where
+module Text.SmallCaps.TeXLaTeXParser where
 
 import Text.Parsec                    ( ParsecT, runParserT, SourcePos, ParseError, tokenPrim, many )
 import Data.Text                      ( Text, empty, pack, unpack, intercalate )
@@ -22,13 +22,13 @@ import Control.Monad.Trans.Writer     ( WriterT, Writer, runWriter, tell )
 import Control.Monad.Trans.Class      ( lift )
 import Control.Arrow                  ( first )
 
-import SmallCaps.TeX                  ( TeX, TeXElement
-                                      , isPrintable, isMacro, isBlock, isComment
-                                      , content
-                                      )
-import qualified SmallCaps.TeX   as T ( body )
-import SmallCaps.LaTeX                ( LaTeX, LaTeXElement (..), name, printable )
-import qualified SmallCaps.LaTeX as L ( body )
+import Text.SmallCaps.TeX                   ( TeX, TeXElement
+                                            , isPrintable, isMacro, isBlock, isComment
+                                            , content
+                                            )
+import qualified Text.SmallCaps.TeX    as T ( body )
+import Text.SmallCaps.LaTeX                 ( LaTeX, LaTeXElement (..), name, printable )
+import qualified Text.SmallCaps.LaTeX  as L ( body )
 
 type Parser       = ParsecT TeX () (Writer [Text])
 

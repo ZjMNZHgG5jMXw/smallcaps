@@ -16,7 +16,7 @@ module Main where
 
 import Data.Default           ( def )
 import System.Environment     ( withProgName )
-import SmallCaps              ( smallcaps )
+import Text.SmallCaps         ( smallcaps )
 
 main :: IO ()
 main = withProgName "lesscase" $ smallcaps def

@@ -5,9 +5,9 @@ import Data.Text                          ( cons, pack, append )
 import qualified Data.Default  as Default ( def )
 import Data.Maybe                         ( isJust )
 
-import SmallCaps.LaTeX                    ( LaTeXElement (..) )
-import SmallCaps.Config                   ( ParserState (..), Config (..), clean, isolateWith )
-import SmallCaps.ConfigParser             ( reconfigure )
+import Text.SmallCaps.LaTeX               ( LaTeXElement (..) )
+import Text.SmallCaps.Config              ( ParserState (..), Config (..), clean, isolateWith )
+import Text.SmallCaps.ConfigParser        ( reconfigure )
 
 import Tests                              ( failOn )
 

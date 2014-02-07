@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- |
--- Module      :  SmallCaps.LaTeXParser
+-- Module      :  Text.SmallCaps.LaTeXParser
 -- Copyright   :  (c) Stefan Berthold 2014
 -- License     :  BSD3-style (see LICENSE)
 --
@@ -12,16 +12,16 @@
 --
 -------------------------------------------------------------------------------
 
-module SmallCaps.LaTeXParser where
+module Text.SmallCaps.LaTeXParser where
 
 import Text.Parsec      ( Parsec, SourcePos, tokenPrim )
 import Data.Text        ( Text )
 import Control.Monad    ( liftM2 )
 
-import SmallCaps.LaTeX  ( LaTeX, LaTeXElement
-                        , isMacro, isEnvironment, isBlock, isPrintable, isComment
-                        , name, content
-                        )
+import Text.SmallCaps.LaTeX ( LaTeX, LaTeXElement
+                            , isMacro, isEnvironment, isBlock, isPrintable, isComment
+                            , name, content
+                            )
 
 type Parser u = Parsec LaTeX u
 

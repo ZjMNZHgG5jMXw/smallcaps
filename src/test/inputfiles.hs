@@ -4,8 +4,8 @@ import System.Exit                ( ExitCode )
 import Data.Text                  ( Text, pack )
 import qualified Data.Set  as Set ( fromList )
 
-import SmallCaps.TeX              ( TeX, TeXElement (..) )
-import SmallCaps.TeXLaTeXParser   ( parse, latex )
+import Text.SmallCaps.TeX             ( TeX, TeXElement (..) )
+import Text.SmallCaps.TeXLaTeXParser  ( parse, latex )
 
 import Tests                      ( failOn )
 

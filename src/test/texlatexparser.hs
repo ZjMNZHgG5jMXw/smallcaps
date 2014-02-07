@@ -3,9 +3,9 @@ module Main where
 import System.Exit                    ( ExitCode )
 import Data.Text                      ( pack )
 
-import qualified SmallCaps.TeX   as T ( TeX, TeXElement (..) )
-import qualified SmallCaps.LaTeX as L ( LaTeX, LaTeXElement (..) )
-import SmallCaps.TeXLaTeXParser       ( parse, latex )
+import qualified Text.SmallCaps.TeX   as T ( TeX, TeXElement (..) )
+import qualified Text.SmallCaps.LaTeX as L ( LaTeX, LaTeXElement (..) )
+import Text.SmallCaps.TeXLaTeXParser       ( parse, latex )
 
 import Tests                          ( failOn )
 

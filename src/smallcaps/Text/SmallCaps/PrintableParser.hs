@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- |
--- Module      :  SmallCaps.PrintableParser
+-- Module      :  Text.SmallCaps.PrintableParser
 -- Copyright   :  (c) Stefan Berthold 2014
 -- License     :  BSD3-style (see LICENSE)
 --
@@ -12,7 +12,7 @@
 --
 -------------------------------------------------------------------------------
 
-module SmallCaps.PrintableParser where
+module Text.SmallCaps.PrintableParser where
 
 import            Prelude      hiding ( head, tail, null )
 
@@ -22,7 +22,7 @@ import            Text.Parsec.Text    ( GenParser )
 import            Data.Text           ( Text, null, empty, singleton, pack, head, tail, append, intercalate )
 import            Control.Monad       ( msum )
 
-import            SmallCaps.Config    ( Config (..), StopState (..), ParserState (..), SubParser )
+import            Text.SmallCaps.Config ( Config (..), StopState (..), ParserState (..), SubParser )
 
 type Parser = GenParser ParserState
 

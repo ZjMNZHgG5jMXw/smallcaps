@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- |
--- Module      :  SmallCaps.ConfigParser
+-- Module      :  Text.SmallCaps.ConfigParser
 -- Copyright   :  (c) Stefan Berthold 2014
 -- License     :  BSD3-style (see LICENSE)
 --
@@ -13,7 +13,7 @@
 --
 -------------------------------------------------------------------------------
 
-module SmallCaps.ConfigParser where
+module Text.SmallCaps.ConfigParser where
 
 import Prelude hiding ( lex, takeWhile )
 
@@ -25,9 +25,9 @@ import Data.Attoparsec.Text       ( Parser, parseOnly, char, takeWhile1, asciiCI
 import Data.Attoparsec.Combinator ( many' )
 import Control.Monad              ( mplus, msum )
 
-import SmallCaps.LaTeX            ( LaTeXElement, name )
-import SmallCaps.Config           ( ParserState (..), Config (..), blacklist, whitelist )
-import SmallCaps.TeXParser        ( macroBegin, macroName )
+import Text.SmallCaps.LaTeX       ( LaTeXElement, name )
+import Text.SmallCaps.Config      ( ParserState (..), Config (..), blacklist, whitelist )
+import Text.SmallCaps.TeXParser   ( macroBegin, macroName )
 
 reconfigure :: ParserState -> Text -> Either (Text, Config) Config
 reconfigure state = either (const (Right (config state))) id . parseOnly (reconfiguration state)
