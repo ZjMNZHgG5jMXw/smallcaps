@@ -5,7 +5,7 @@ name:                smallcaps
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.4.0.0
+version:             0.4
 synopsis:            A library and a program for pre-processing LaTeX files
 description:         smallcaps is a pre-processor library for LaTeX files.
                      The library comes with an executable that makes most

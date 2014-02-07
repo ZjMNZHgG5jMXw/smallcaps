@@ -41,7 +41,7 @@ import qualified Text.SmallCaps.ConfigParser as ConfigParser ( Style ( .. ) )
 
 version :: Version
 version = Version
-  { versionBranch = [0,3]
+  { versionBranch = [0,4]
   , versionTags   = []
   }
 
