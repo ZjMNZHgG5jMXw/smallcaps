@@ -47,7 +47,7 @@ description:         smallcaps is a pre-processor library for LaTeX files.
                      .
                      @
                         import Data.Default   ( def )
-                        import SmallCaps      ( smallcaps )
+                        import Text.SmallCaps ( smallcaps )
                         main = smallcaps def
                      @
 license:             BSD3
