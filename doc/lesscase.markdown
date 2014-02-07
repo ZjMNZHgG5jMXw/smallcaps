@@ -84,7 +84,7 @@ lesscase can be configured through its command line arguments as well as through
 -e *list*, \--eos=*list*
 :   A list of LaTeX macros and environments that mark the end of a sentence.
     The *list* works as in `--search`.
-    (Default: "`+ \par, \part, \chapter, \section, \subsection, \subsubsection, \paragraph, itemize, enumerate, description`")
+    (Default: "`+ \par, \part, \chapter, \section, \subsection, \subsubsection, \paragraph, \include, itemize, enumerate, description`")
 
 # INLINE CONFIGURATION
 
