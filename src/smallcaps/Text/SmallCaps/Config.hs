@@ -101,6 +101,7 @@ defaultEos :: LaTeXElement -> Bool
 defaultEos = after
   [ "\\par"
   , "\\part", "\\chapter", "\\section", "\\subsection", "\\subsubsection", "\\paragraph"
+  , "\\part*", "\\chapter*", "\\section*", "\\subsection*", "\\subsubsection*"
   , "\\include"
   , "itemize", "enumerate", "description"
   ]

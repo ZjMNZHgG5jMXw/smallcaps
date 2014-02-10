@@ -50,7 +50,7 @@ isComment (Comment _) = True
 isComment _           = False
 
 isMacroLetter :: Char -> Bool
-isMacroLetter c = isLetter c || c == '@'
+isMacroLetter c = isLetter c || c == '@' || c == '*'
 
 isMacroSign :: Char -> Bool
 isMacroSign c = c == ' ' || (isPrint c && not (isNumber c || isSpace c))
