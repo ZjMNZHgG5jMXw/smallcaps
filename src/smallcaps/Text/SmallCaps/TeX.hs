@@ -53,7 +53,7 @@ isMacroLetter :: Char -> Bool
 isMacroLetter c = isLetter c || c == '@'
 
 isMacroSign :: Char -> Bool
-isMacroSign c = isPrint c && not (isNumber c || isSpace c)
+isMacroSign c = c == ' ' || (isPrint c && not (isNumber c || isSpace c))
 
 -- ** Accessors
 
