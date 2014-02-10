@@ -203,7 +203,7 @@ usage = do
   putStrLn    "    busy:          search all environments and macros"
   putStrLn    "    clean:         suppress all actions"
   putStrLn    ""
-  putStrLn    " % smallcaps restore profile <name>"
+  putStrLn    " % smallcaps store profile <name>"
   putStrLn    "    store a configuration profile as <name>"
   putStrLn    ""
   putStrLn    " % smallcaps periods are <chars>"
