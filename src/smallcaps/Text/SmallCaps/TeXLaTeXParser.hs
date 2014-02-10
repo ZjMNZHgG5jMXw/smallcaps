@@ -71,15 +71,15 @@ translateTell :: Monad m => TeXElement -> WriterT [Text] m LaTeXElement
 translateTell = uncurry (flip ((>>) . tell) . return) . translate
 
 macroSatisfy :: (TeXElement -> Bool) -> Parser LaTeXElement
-macroSatisfy cond = satisfy (liftM2 (&&) isMacro cond) >>= \x -> fmap (Macro (content x)) macroArguments
-
-macro :: Parser LaTeXElement
-macro = do
-  x <- macroSatisfy (const True)
+macroSatisfy cond = do
+  x <- satisfy (liftM2 (&&) isMacro cond) >>= \x -> fmap (Macro (content x)) macroArguments
   if (name x == pack "\\include") || (name x == pack "\\input")
   then lift $ tell [intercalate empty $ map printable $ L.body x]
   else return ()
   return x
+
+macro :: Parser LaTeXElement
+macro = macroSatisfy (const True)
 
 macroTextArg :: Text -> Parser Text
 macroTextArg name' = skipMacro name' >> fmap arg (satisfy isBlock)
