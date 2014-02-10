@@ -23,7 +23,7 @@ data LaTeXElement
   | Macro Text LaTeX        -- ^ macro name + following blocks
   | Environment Text LaTeX  -- ^ environment name + content
   | Block LaTeX             -- ^ separate block
-  | BBlock LaTeX            -- ^ []-block
+  | BBlock LaTeX            -- ^ block between square brackets
   | Comment Text            -- ^ comment starting with '%'
   deriving (Eq, Show)
 
