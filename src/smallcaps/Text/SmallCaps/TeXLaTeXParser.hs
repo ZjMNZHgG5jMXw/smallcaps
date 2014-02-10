@@ -23,7 +23,7 @@ import Control.Monad.Trans.Class      ( lift )
 import Control.Arrow                  ( first )
 
 import Text.SmallCaps.TeX                   ( TeX, TeXElement
-                                            , isPrintable, isMacro, isBlock, isComment
+                                            , isPrintable, isMacro, isBlock, isBBlock, isComment
                                             , content
                                             )
 import qualified Text.SmallCaps.TeX    as T ( body )
@@ -64,13 +64,14 @@ translate x
   | isPrintable x = (Printable  (content x),    [])
   | isMacro     x = (Macro      (content x) [], []) -- use macro instead!
   | isComment   x = (Comment    (content x),    [])
-  | otherwise     = first Block $ parse latex (T.body x)
+  | isBlock     x = first Block   $ parse latex (T.body x)
+  | otherwise     = first BBlock  $ parse latex (T.body x)
 
 translateTell :: Monad m => TeXElement -> WriterT [Text] m LaTeXElement
 translateTell = uncurry (flip ((>>) . tell) . return) . translate
 
 macroSatisfy :: (TeXElement -> Bool) -> Parser LaTeXElement
-macroSatisfy cond = satisfy (liftM2 (&&) isMacro cond) >>= \x -> fmap (Macro (content x)) (many anyBlock)
+macroSatisfy cond = satisfy (liftM2 (&&) isMacro cond) >>= \x -> fmap (Macro (content x)) macroArguments
 
 macro :: Parser LaTeXElement
 macro = do
@@ -95,6 +96,15 @@ environment = do
 
 anyBlock :: Parser LaTeXElement
 anyBlock = lift . translateTell =<< satisfy isBlock
+
+anyBBlock :: Parser LaTeXElement
+anyBBlock = lift . translateTell =<< satisfy isBBlock
+
+macroArguments :: Parser LaTeX
+macroArguments = do
+  bbs <- many anyBBlock
+  bs  <- many anyBlock
+  return $ bbs ++ bs
 
 latexElement :: Parser LaTeXElement
 latexElement = lift . translateTell =<< satisfy (const True)

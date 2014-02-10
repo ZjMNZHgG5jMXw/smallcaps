@@ -19,7 +19,7 @@ import Data.Text        ( Text )
 import Control.Monad    ( liftM2 )
 
 import Text.SmallCaps.LaTeX ( LaTeX, LaTeXElement
-                            , isMacro, isEnvironment, isBlock, isPrintable, isComment
+                            , isMacro, isEnvironment, isBlock, isBBlock, isPrintable, isComment
                             , name, content
                             )
 
@@ -52,6 +52,9 @@ environment n = satisfy (liftM2 (&&) isEnvironment ((n ==) . name))
 
 anyBlock :: Parser u LaTeXElement
 anyBlock = satisfy isBlock
+
+anyBBlock :: Parser u LaTeXElement
+anyBBlock = satisfy isBBlock
 
 anyComment :: Parser u LaTeXElement
 anyComment = satisfy isComment

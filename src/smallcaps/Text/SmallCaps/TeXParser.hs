@@ -28,13 +28,14 @@ tex = many' $ msum
   , comment
   , macro
   , block
+  , bblock
   ]
 
 -- ** Printable
 
 printable :: Parser TeXElement
 printable = fmap Printable $ takeWhile1 printableChar
-  where printableChar = not . flip elem "\\{}%"
+  where printableChar = not . flip elem "\\{}[]%"
 
 -- ** Comment
 
@@ -82,6 +83,21 @@ blockBegin = char '{'
 
 blockEnd :: Parser Char
 blockEnd = char '}'
+
+-- ** BBlock
+
+bblock :: Parser TeXElement
+bblock = fmap BBlock $ do
+  _ <- bblockBegin
+  c <- tex
+  _ <- bblockEnd
+  return c
+
+bblockBegin :: Parser Char
+bblockBegin = char '['
+
+bblockEnd :: Parser Char
+bblockEnd = char ']'
 
 -- ** Helpers
 

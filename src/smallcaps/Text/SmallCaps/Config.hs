@@ -21,7 +21,7 @@ import qualified  Data.Map as Map ( empty, fromList )
 import            Control.Monad   ( liftM2 )
 
 import            Text.SmallCaps.LaTeX  ( LaTeX, LaTeXElement
-                                        , isPrintable, isMacro, isEnvironment, isBlock, isComment
+                                        , isPrintable, isMacro, isEnvironment, isBlock, isBBlock, isComment
                                         , name
                                         )
 
@@ -151,7 +151,7 @@ small = def
   }
 
 whitelist :: [String] -> LaTeXElement -> Bool
-whitelist names = liftM2 (||) (liftM2 (||) isPrintable isBlock) (after names)
+whitelist names = liftM2 (||) (liftM2 (||) (liftM2 (||) isBlock isBBlock) isPrintable) (after names)
 
 blacklist :: [String] -> LaTeXElement -> Bool
 blacklist names = not . liftM2 (||) isComment (after names)

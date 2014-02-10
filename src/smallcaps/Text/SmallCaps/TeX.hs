@@ -23,6 +23,7 @@ data TeXElement
   = Printable Text
   | Macro Text
   | Block TeX
+  | BBlock TeX
   | Comment Text
   deriving (Eq, Show)
 
@@ -39,6 +40,10 @@ isMacro _         = False
 isBlock :: TeXElement -> Bool
 isBlock (Block _) = True
 isBlock _         = False
+
+isBBlock :: TeXElement -> Bool
+isBBlock (BBlock _) = True
+isBBlock _          = False
 
 isComment :: TeXElement -> Bool
 isComment (Comment _) = True
@@ -61,10 +66,12 @@ content _                 = empty
 printable :: TeXElement -> Text
 printable (Printable text)  = text
 printable (Block tex)       = intercalate empty $ map printable tex
+printable (BBlock tex)      = intercalate empty $ map printable tex
 printable _                 = empty
 
 body :: TeXElement -> TeX
 body (Block tex)  = tex
+body (BBlock tex) = tex
 body _            = []
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai
