@@ -114,6 +114,7 @@ environment :: Parser LaTeXElement
 environment = do
   x <- anyEnvironment
   implySkip x
+  resetNewLine -- ignore the linebreak after \begin{env}
   latex <- decideSub x runDocumentWith (body x)
   resetNewLine
   implyEos x
@@ -123,6 +124,7 @@ block :: Parser LaTeXElement
 block = do
   x <- anyBlock
   implySkip x
+  resetNewLine -- ignore the linebreak after an opening parenthesis
   latex <- decideSub x runDocumentWith (body x)
   resetNewLine
   implyEos x
@@ -132,6 +134,7 @@ bblock :: Parser LaTeXElement
 bblock = do
   x <- anyBBlock
   implySkip x
+  resetNewLine -- ignore the linebreak after an opening parenthesis
   latex <- decideSub x runDocumentWith (body x)
   resetNewLine
   implyEos x
