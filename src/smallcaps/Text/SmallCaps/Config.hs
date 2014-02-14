@@ -21,7 +21,7 @@ import qualified  Data.Map as Map ( empty, fromList )
 import            Control.Monad   ( liftM2 )
 
 import            Text.SmallCaps.LaTeX  ( LaTeX, LaTeXElement
-                                        , isPrintable, isMacro, isEnvironment, isBlock, isBBlock, isComment
+                                        , isPrintable, isMacro, isEnvironment, isBlock, isBBlock, isMath, isComment
                                         , name
                                         )
 
@@ -155,7 +155,7 @@ whitelist :: [String] -> LaTeXElement -> Bool
 whitelist names = liftM2 (||) (liftM2 (||) (liftM2 (||) isBlock isBBlock) isPrintable) (after names)
 
 blacklist :: [String] -> LaTeXElement -> Bool
-blacklist names = not . liftM2 (||) isComment (after names)
+blacklist names = not . liftM2 (||) (liftM2 (||) isMath isComment) (after names)
 
 after :: [String] -> LaTeXElement -> Bool
 after names = liftM2 (&&) (liftM2 (||) isMacro isEnvironment) (flip elem (map pack names) . name)

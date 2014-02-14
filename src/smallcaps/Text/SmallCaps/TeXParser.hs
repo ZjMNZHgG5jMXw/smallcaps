@@ -16,26 +16,30 @@
 module Text.SmallCaps.TeXParser where
 
 import Data.Attoparsec.Text       ( Parser, satisfy, char, takeWhile1, takeTill, endOfLine, isEndOfLine )
-import Data.Attoparsec.Combinator ( many', option )
+import Data.Attoparsec.Combinator ( many', manyTill', option )
 import Data.Text                  ( Text, singleton, cons, snoc )
 import Control.Monad              ( msum, mplus )
 
 import Text.SmallCaps.TeX         ( TeX, TeXElement (..), isMacroLetter, isMacroSign )
 
 tex :: Parser TeX
-tex = many' $ msum
+tex = many' texElement
+
+texElement :: Parser TeXElement
+texElement = msum
   [ printable
   , comment
   , macro
   , block
   , bblock
+  , math
   ]
 
 -- ** Printable
 
 printable :: Parser TeXElement
 printable = fmap Printable $ takeWhile1 printableChar
-  where printableChar = not . flip elem "\\{}[]%"
+  where printableChar = not . flip elem "\\{}[]%$"
 
 -- ** Comment
 
@@ -98,6 +102,13 @@ bblockBegin = char '['
 
 bblockEnd :: Parser Char
 bblockEnd = char ']'
+
+-- ** Math
+
+math :: Parser TeXElement
+math = fmap Math $ do
+  _ <- char '$'
+  manyTill' texElement (char '$')
 
 -- ** Helpers
 

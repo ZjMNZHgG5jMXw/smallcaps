@@ -24,6 +24,7 @@ data TeXElement
   | Macro Text
   | Block TeX
   | BBlock TeX
+  | Math TeX
   | Comment Text
   deriving (Eq, Show)
 
@@ -44,6 +45,10 @@ isBlock _         = False
 isBBlock :: TeXElement -> Bool
 isBBlock (BBlock _) = True
 isBBlock _          = False
+
+isMath :: TeXElement -> Bool
+isMath (Math _) = True
+isMath _        = False
 
 isComment :: TeXElement -> Bool
 isComment (Comment _) = True
@@ -72,6 +77,7 @@ printable _                 = empty
 body :: TeXElement -> TeX
 body (Block tex)  = tex
 body (BBlock tex) = tex
+body (Math tex)   = tex
 body _            = []
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

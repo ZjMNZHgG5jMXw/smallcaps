@@ -23,7 +23,7 @@ import Control.Monad.Trans.Class      ( lift )
 import Control.Arrow                  ( first )
 
 import Text.SmallCaps.TeX                   ( TeX, TeXElement
-                                            , isPrintable, isMacro, isBlock, isBBlock, isComment
+                                            , isPrintable, isMacro, isBlock, isBBlock, isMath, isComment
                                             , content
                                             )
 import qualified Text.SmallCaps.TeX    as T ( body )
@@ -64,6 +64,7 @@ translate x
   | isPrintable x = (Printable  (content x),    [])
   | isMacro     x = (Macro      (content x) [], []) -- use macro instead!
   | isComment   x = (Comment    (content x),    [])
+  | isMath      x = first Math    $ parse latex (T.body x)
   | isBlock     x = first Block   $ parse latex (T.body x)
   | otherwise     = first BBlock  $ parse latex (T.body x)
 

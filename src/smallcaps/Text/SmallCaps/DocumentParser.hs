@@ -27,7 +27,7 @@ import qualified  Data.Map             as Map ( insert, update, lookup )
 import            Text.SmallCaps.LaTeX             ( LaTeX, LaTeXElement (..), name, body, content )
 import qualified  Text.SmallCaps.LaTeX    as LaTeX ( printable )
 import qualified  Text.SmallCaps.LaTeXParser  as L ( Parser )
-import            Text.SmallCaps.LaTeXParser       ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyBBlock, anyComment )
+import            Text.SmallCaps.LaTeXParser       ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyBBlock, anyMath, anyComment )
 import            Text.SmallCaps.Config            ( ParserState (..), Config (..), StopState (..), SubParser )
 import            Text.SmallCaps.PrintableParser   ( runPrintableWith )
 import            Text.SmallCaps.ConfigParser      ( reconfigure )
@@ -89,6 +89,7 @@ documentElement = msum
   , environment
   , block
   , bblock
+  , math
   , comment
   ]
 
@@ -139,6 +140,14 @@ bblock = do
   resetNewLine
   implyEos x
   return $ BBlock latex
+
+math :: Parser LaTeXElement
+math = do
+  x <- anyMath
+  implySkip x
+  resetNewLine
+  implyEos x
+  return x
 
 comment :: Parser LaTeXElement
 comment = do

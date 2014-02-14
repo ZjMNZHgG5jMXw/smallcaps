@@ -24,6 +24,7 @@ data LaTeXElement
   | Environment Text LaTeX  -- ^ environment name + content
   | Block LaTeX             -- ^ separate block
   | BBlock LaTeX            -- ^ block between square brackets
+  | Math LaTeX              -- ^ inline math
   | Comment Text            -- ^ comment starting with '%'
   deriving (Eq, Show)
 
@@ -49,6 +50,10 @@ isBBlock :: LaTeXElement -> Bool
 isBBlock (BBlock _) = True
 isBBlock _          = False
 
+isMath :: LaTeXElement -> Bool
+isMath (Math _) = True
+isMath _        = False
+
 isComment :: LaTeXElement -> Bool
 isComment (Comment _) = True
 isComment _           = False
@@ -68,6 +73,7 @@ content _                 = empty
 printable :: LaTeXElement -> Text
 printable (Printable text)  = text
 printable (Macro _ _)       = empty
+printable (Math _)          = empty
 printable x                 = cc $ map printable $ body x
 
 body :: LaTeXElement -> LaTeX
@@ -75,6 +81,7 @@ body (Macro _ latex)        = latex
 body (Environment _ latex)  = latex
 body (Block latex)          = latex
 body (BBlock latex)         = latex
+body (Math latex)           = latex
 body _                      = []
 
 -- ** Translation
@@ -99,6 +106,11 @@ unlatexElement (BBlock latex) = cc
   [ singleton '['
   , unlatex latex
   , singleton ']'
+  ]
+unlatexElement (Math latex) = cc
+  [ singleton '$'
+  , unlatex latex
+  , singleton '$'
   ]
 unlatexElement (Comment text) = text
 
