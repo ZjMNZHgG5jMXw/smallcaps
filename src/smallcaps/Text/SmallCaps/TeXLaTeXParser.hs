@@ -73,7 +73,7 @@ translateTell = uncurry (flip ((>>) . tell) . return) . translate
 
 macroSatisfy :: (TeXElement -> Bool) -> Parser LaTeXElement
 macroSatisfy cond = do
-  x <- satisfy (liftM2 (&&) isMacro cond) >>= \x -> fmap (Macro (content x)) macroArguments
+  x <- flip fmap macroArguments . Macro . content =<< satisfy (liftM2 (&&) isMacro cond)
   if (name x == pack "\\include") || (name x == pack "\\input")
   then lift $ tell [intercalate empty $ map printable $ L.body x]
   else return ()
