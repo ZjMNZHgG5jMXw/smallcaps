@@ -69,7 +69,7 @@ newline :: Parser Text
 newline = fmap singleton $ P.newline >>= pass inc
 
 misc :: Parser Text
-misc = fmap singleton $ anyChar
+misc = fmap singleton $ anyChar >>= pass reset
 
 -- ** State modification
 

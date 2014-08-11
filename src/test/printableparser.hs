@@ -34,6 +34,10 @@ checks =
   , ("\n",      (def { stop = NewLine },      checkOutStop "\n" NewSentence))
   , ("\n",      (def { stop = Stop },         checkOutStop "\n" NewSentence))
   , ("\n",      (def { stop = NewSentence },  checkOutStop "\n" NewSentence))
+  , (",",       (def { stop = None },         checkOutStop "," None))
+  , (",",       (def { stop = NewLine },      checkOutStop "," None))
+  , (",",       (def { stop = Stop },         checkOutStop "," None))
+  , (",",       (def { stop = NewSentence },  checkOutStop "," None))
   ]
 
 failed :: [(String, (ParserState, (Text, ParserState) -> Bool))] -> [String]
