@@ -30,7 +30,7 @@ import            Text.SmallCaps.LaTeX  ( LaTeX, LaTeXElement
 data ParserState = ParserState
   { config  :: Config                           -- ^ configuration
   , inputs  :: Map FilePath (FilePath, LaTeX)   -- ^ additional input files
-  , profile :: Map Text Config                  -- ^ configuration preset list
+  , profile :: Profile                          -- ^ configuration preset list
   , stop    :: StopState                        -- ^ stop state
   , ignore  :: Bool                             -- ^ skip on/off
   }
@@ -39,15 +39,18 @@ instance Default ParserState where
   def = ParserState
     { config  = def
     , inputs  = Map.empty
-    , profile = Map.fromList  [ (pack "default",      def)
+    , profile = defaultProfile
+    , stop    = def
+    , ignore  = False
+    }
+
+defaultProfile :: Map Text Config
+defaultProfile = Map.fromList [ (pack "default",      def)
                               , (pack "clean",        clean)
                               , (pack "conservative", conservative)
                               , (pack "busy",         busy)
                               , (pack "small",        small)
                               ]
-    , stop    = def
-    , ignore  = False
-    }
 
 -- ** Configuration data type
 
