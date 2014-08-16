@@ -25,10 +25,6 @@ import            Text.SmallCaps.LaTeX  ( LaTeX, LaTeXElement
                                         , name
                                         )
 
--- ** Subparser data type
-
-type SubParser a = ParserState -> a -> Either String (a, ParserState)
-
 -- ** Parser user state
 
 data ParserState = ParserState
@@ -170,6 +166,14 @@ findConfigName name' = foldr fun Nothing
   where fun (n,c) Nothing | pack n == name' = Just (pack c)
                           | otherwise       = Nothing
         fun _     x                         = x
+
+-- ** Profile data type
+
+type Profile = Map Text Config
+
+-- ** Subparser data type
+
+type SubParser a = ParserState -> a -> Either String (a, ParserState)
 
 -- ** Stop state
 
