@@ -28,7 +28,7 @@ import            Text.SmallCaps.LaTeX             ( LaTeX, LaTeXElement (..), n
 import qualified  Text.SmallCaps.LaTeX    as LaTeX ( printable )
 import qualified  Text.SmallCaps.LaTeXParser  as L ( Parser )
 import            Text.SmallCaps.LaTeXParser       ( anyPrintable, anyMacro, anyEnvironment, anyBlock, anyBBlock, anyMath, anyComment )
-import            Text.SmallCaps.Config            ( ParserState (..), Config (..), StopState (..), SubParser )
+import            Text.SmallCaps.Config            ( ParserState (..), Config (..), Profile, StopState (..), SubParser )
 import            Text.SmallCaps.PrintableParser   ( runPrintableWith )
 import            Text.SmallCaps.ConfigParser      ( reconfigure )
 
@@ -36,13 +36,13 @@ type Parser = L.Parser ParserState
 
 -- ** Documents
 
-runDocument :: Config -> LaTeX -> Either String LaTeX
-runDocument conf = either Left (Right . fst) . runDocumentWith (def { config = conf })
+runDocument :: Config -> Profile -> LaTeX -> Either String LaTeX
+runDocument conf prof = either Left (Right . fst) . runDocumentWith (def { config = conf, profile = prof })
 
 runDocument'
-  :: Map FilePath (FilePath, LaTeX) -> Config -> LaTeX
+  :: Map FilePath (FilePath, LaTeX) -> Config -> Profile -> LaTeX
   -> Either String (LaTeX, Map FilePath (FilePath, LaTeX))
-runDocument' ls conf = either Left (Right . second inputs) . runDocumentWith (def { config = conf, inputs = ls })
+runDocument' ls conf prof = either Left (Right . second inputs) . runDocumentWith (def { config = conf, profile = prof, inputs = ls })
 
 runDocumentWith :: SubParser LaTeX
 runDocumentWith state = either (Left . show) Right . runParser (stateAnd document) state ""

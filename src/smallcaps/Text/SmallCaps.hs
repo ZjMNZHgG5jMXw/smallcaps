@@ -29,7 +29,7 @@ import Data.Map                   ( Map )
 import qualified Data.Map  as Map ( empty, member, insert, elems )
 import Control.Monad              ( foldM )
 
-import Text.SmallCaps.Config           ( Config (..), conservative, busy, clean )
+import Text.SmallCaps.Config           ( Config (..), Profile, conservative, busy, clean )
 import Text.SmallCaps.LaTeX            ( LaTeX, unlatex )
 import Text.SmallCaps.TeXParser        ( tex )
 import Text.SmallCaps.TeXLaTeXParser   ( parse, latex )
@@ -41,39 +41,39 @@ import qualified Text.SmallCaps.ConfigParser as ConfigParser ( Style ( .. ) )
 
 version :: Version
 version = Version
-  { versionBranch = [0,4,1,3]
+  { versionBranch = [0,5,0,0]
   , versionTags   = []
   }
 
 -- ** Pure functions
 
-smallcapsNoRecursion :: Config -> Text -> Either String Text
-smallcapsNoRecursion conf = fmap unlatex . (runDocument conf =<<) . fmap fst . parseLaTeX
+smallcapsNoRecursion :: Config -> Profile -> Text -> Either String Text
+smallcapsNoRecursion conf prof = fmap unlatex . (runDocument conf prof =<<) . fmap fst . parseLaTeX
 
 parseLaTeX :: Text -> Either String (LaTeX, [Text])
 parseLaTeX = fmap (parse latex) . parseOnly tex
 
 -- ** Main program function
 
-smallcaps :: Config -> IO ()
-smallcaps conf = uncurry (runFlags conf) =<< opts =<< getArgs
+smallcaps :: Config -> Profile -> IO ()
+smallcaps conf prof = uncurry (runFlags conf prof) =<< opts =<< getArgs
 
-smallcapsHandle :: Handle -> Handle -> Config -> IO ()
-smallcapsHandle inp out conf = hPutStr out =<< runParser =<< hGetContents inp
-  where runParser = either fail return . smallcapsNoRecursion conf
+smallcapsHandle :: Handle -> Handle -> Config -> Profile -> IO ()
+smallcapsHandle inp out conf prof = hPutStr out =<< runParser =<< hGetContents inp
+  where runParser = either fail return . smallcapsNoRecursion conf prof
 
-smallcapsPipe :: Config -> IO ()
+smallcapsPipe :: Config -> Profile -> IO ()
 smallcapsPipe = smallcapsHandle stdin stdout
 
-smallcapsFile :: FilePath -> FilePath -> Config -> IO ()
-smallcapsFile pre inpFN conf = either fail (prefixed pre inpFN) . smallcapsNoRecursion conf =<< hGetContents =<< openFile inpFN ReadMode
+smallcapsFile :: FilePath -> FilePath -> Config -> Profile -> IO ()
+smallcapsFile pre inpFN conf prof = either fail (prefixed pre inpFN) . smallcapsNoRecursion conf prof =<< hGetContents =<< openFile inpFN ReadMode
 
-smallcapsRecursiveFile :: FilePath -> FilePath -> Config -> IO ()
-smallcapsRecursiveFile pre inpFN conf = do
+smallcapsRecursiveFile :: FilePath -> FilePath -> Config -> Profile -> IO ()
+smallcapsRecursiveFile pre inpFN conf prof = do
   inp <- openFile inpFN ReadMode
   (inpCode, fs) <- either fail return =<< fmap parseLaTeX (hGetContents inp)
   ls <- recursiveContents (takeDirectory inpFN) Map.empty (map unpack fs)
-  (outCode, ls') <- either fail return $ runDocument' ls conf inpCode
+  (outCode, ls') <- either fail return $ runDocument' ls conf prof inpCode
   prefixed pre inpFN $ unlatex outCode
   mapM_ (uncurry ((. unlatex) . prefixed pre)) $ Map.elems ls'
 
@@ -132,13 +132,13 @@ data Flag
   | NoInline
   deriving (Eq, Show)
 
-runFlags :: Config -> [Flag] -> [String] -> IO ()
-runFlags conf flags filenames
+runFlags :: Config -> Profile -> [Flag] -> [String] -> IO ()
+runFlags conf prof flags filenames
   | Help `elem` flags       = usage
   | ProgVer `elem` flags    = putVersion
-  | null filenames          = smallcapsPipe                                               (reconf conf flags)
-  | Recursive `elem` flags  = smallcapsRecursiveFile  (getPrefix flags) (head filenames)  (reconf conf flags)
-  | otherwise               = smallcapsFile           (getPrefix flags) (head filenames)  (reconf conf flags)
+  | null filenames          = smallcapsPipe                                               (reconf conf flags) prof
+  | Recursive `elem` flags  = smallcapsRecursiveFile  (getPrefix flags) (head filenames)  (reconf conf flags) prof
+  | otherwise               = smallcapsFile           (getPrefix flags) (head filenames)  (reconf conf flags) prof
 
 reconf :: Config -> [Flag] -> Config
 reconf = foldl fun where

@@ -5,7 +5,7 @@ import Data.Text                ( pack )
 import Data.Default             ( def )
 
 import Text.SmallCaps.LaTeX          ( LaTeX, LaTeXElement (..) )
-import Text.SmallCaps.Config         ( Config (..), whitelist, after, isolateWith, clean )
+import Text.SmallCaps.Config         ( Config (..), defaultProfile, whitelist, after, isolateWith, clean )
 import Text.SmallCaps.DocumentParser ( runDocument )
 
 import Tests                    ( failOn )
@@ -50,7 +50,7 @@ checks =
   ] where iso = isolateWith . map (flip (,) "default")
 
 failed :: [Check] -> [String]
-failed = map (show . fst) . filter (\(a, (conf, b)) -> not (either (const False) (== b) (runDocument conf a)))
+failed = map (show . fst) . filter (\(a, (conf, b)) -> not (either (const False) (== b) (runDocument conf defaultProfile a)))
 
 isChanging, noChange :: Config -> (LaTeXElement -> LaTeXElement -> LaTeX) -> Check
 isChanging  conf fun = (fun unchanged unchanged, (conf, fun changed changed'))

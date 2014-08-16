@@ -17,8 +17,9 @@ module Main where
 import Data.Default           ( def )
 import System.Environment     ( withProgName )
 import Text.SmallCaps         ( smallcaps )
+import Text.SmallCaps.Config  ( defaultProfile )
 
 main :: IO ()
-main = withProgName "lesscase" $ smallcaps def
+main = withProgName "lesscase" $ smallcaps def defaultProfile
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai
