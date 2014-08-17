@@ -21,7 +21,7 @@ import Data.Char                  ( isAlpha, isAlphaNum, isPunctuation )
 import Data.Text hiding           ( replace, takeWhile )
 import Data.Map                   ( Map )
 import qualified Data.Map as Map  ( lookup )
-import Data.Attoparsec.Text       ( Parser, parseOnly, char, takeWhile1, takeText, asciiCI, skipSpace )
+import Data.Attoparsec.Text       ( Parser, parseOnly, char, takeWhile1, asciiCI, skipSpace, isEndOfLine )
 import Data.Attoparsec.Combinator ( many' )
 import Control.Monad              ( mplus, msum )
 
@@ -180,7 +180,7 @@ exceptPre = lex (asciiCI (pack "except"))
 exceptTuple :: Config -> Parser Config
 exceptTuple conf = do
   word <- lex (takeWhile1 isAlphaNum)
-  repl <- (lex (asciiCI (pack "put")) >> lex takeText) `mplus` return word
+  repl <- (lex (asciiCI (pack "put")) >> lex (takeWhile1 (not . isEndOfLine))) `mplus` return word
   return $ conf { exceptions = PatternReplace
                                 { pattern     = word
                                 , replacement = repl
