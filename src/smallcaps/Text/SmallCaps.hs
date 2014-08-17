@@ -41,7 +41,7 @@ import qualified Text.SmallCaps.ConfigParser as ConfigParser ( Style ( .. ) )
 
 version :: Version
 version = Version
-  { versionBranch = [0,5,1,0]
+  { versionBranch = [0,5,1,1]
   , versionTags   = []
   }
 
@@ -247,6 +247,6 @@ usage = do
   putStrLn    " backslash ('\\') and environment names.\n"
 
 putVersion :: IO ()
-putVersion = putStrLn =<< fmap (++ " version " ++ showVersion version) getProgName
+putVersion = putStrLn =<< fmap (++ " with SmallCaps library v" ++ showVersion version) getProgName
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai
