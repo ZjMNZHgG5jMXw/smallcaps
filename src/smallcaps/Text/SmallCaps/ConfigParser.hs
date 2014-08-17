@@ -21,12 +21,12 @@ import Data.Char                  ( isAlpha, isAlphaNum, isPunctuation )
 import Data.Text hiding           ( replace, takeWhile )
 import Data.Map                   ( Map )
 import qualified Data.Map as Map  ( lookup )
-import Data.Attoparsec.Text       ( Parser, parseOnly, char, takeWhile1, asciiCI, skipSpace )
+import Data.Attoparsec.Text       ( Parser, parseOnly, char, takeWhile1, takeText, asciiCI, skipSpace )
 import Data.Attoparsec.Combinator ( many' )
 import Control.Monad              ( mplus, msum )
 
 import Text.SmallCaps.LaTeX       ( LaTeXElement, name )
-import Text.SmallCaps.Config      ( ParserState (..), Config (..), blacklist, whitelist )
+import Text.SmallCaps.Config      ( ParserState (..), Config (..), PatternReplace (..), blacklist, whitelist )
 import Text.SmallCaps.TeXParser   ( macroBegin, macroName )
 
 reconfigure :: ParserState -> Text -> Either (Text, Config) Config
@@ -43,6 +43,7 @@ reconfiguration state = preamble >> msum
   , fmap Right  $ skipMain    conf
   , fmap Right  $ unskipMain  conf
   , fmap Right  $ eosMain     conf
+  , fmap Right  $ exceptMain  conf
   ] where conf = config state
 
 -- ** Lexer
@@ -167,6 +168,23 @@ eosPre = lex $ asciiCI (pack "eos")
 
 eosList :: Config -> Parser Config
 eosList conf = list (eos conf) >>= \fun -> return $ conf { eos = fun }
+
+-- ** Except and replace words
+
+exceptMain :: Config -> Parser Config
+exceptMain = (exceptPre >>) . exceptTuple
+
+exceptPre :: Parser Text
+exceptPre = lex (asciiCI (pack "except"))
+
+exceptTuple :: Config -> Parser Config
+exceptTuple conf = do
+  word <- lex (takeWhile1 isAlphaNum)
+  repl <- (lex (asciiCI (pack "put")) >> lex takeText) `mplus` return word
+  return $ conf { exceptions = PatternReplace
+                                { pattern     = word
+                                , replacement = repl
+                                } : exceptions conf }
 
 -- ** Macro/environment name list parser
 

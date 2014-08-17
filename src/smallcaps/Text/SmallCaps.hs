@@ -41,7 +41,7 @@ import qualified Text.SmallCaps.ConfigParser as ConfigParser ( Style ( .. ) )
 
 version :: Version
 version = Version
-  { versionBranch = [0,5,0,0]
+  { versionBranch = [0,5,1,0]
   , versionTags   = []
   }
 
@@ -237,6 +237,11 @@ usage = do
   putStrLn    "    undo skip"
   putStrLn    " % smallcaps eos <options as in search>"
   putStrLn    "    starts a new sentence after the macro or environemt"
+  putStrLn    ""
+  putStrLn    " % smallcaps except <word>"
+  putStrLn    "    exclude word from processing"
+  putStrLn    " % smallcaps except <word> put <string>"
+  putStrLn    "    exclude word from processing and replace it with string"
   putStrLn    ""
   putStrLn    " <list> is a comma-separated list of macro names including"
   putStrLn    " backslash ('\\') and environment names.\n"

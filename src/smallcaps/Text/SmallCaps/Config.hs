@@ -62,6 +62,7 @@ data Config = Config
   , unskip        :: LaTeXElement -> Bool       -- ^ undo skip, e.g., at @\normalsize@ when skipping @\small@
   , eos           :: LaTeXElement -> Bool       -- ^ end of sentence, start with new one
   , replace       :: Text -> Text               -- ^ formatting for small caps
+  , exceptions    :: [PatternReplace]           -- ^ search for patterns in printables and replace them (no further processing)
   , inlineConfig  :: Bool                       -- ^ dynamic reconfiguration in LaTeX comments
   }
 
@@ -74,6 +75,7 @@ instance Default Config where
     , unskip        = defaultUnskip
     , eos           = defaultEos
     , replace       = defaultReplace
+    , exceptions    = defaultExceptions
     , inlineConfig  = True
     }
 
@@ -108,6 +110,9 @@ defaultEos = after
 defaultReplace :: Text -> Text
 defaultReplace caps = pack "{\\small " `append` snoc caps '}'
 
+defaultExceptions :: [PatternReplace]
+defaultExceptions = []
+
 -- ** Configuration presets
 
 -- | combinator for plugin construction
@@ -127,6 +132,7 @@ clean = Config
   , unskip        = const False
   , eos           = const False
   , replace       = id
+  , exceptions    = []
   , inlineConfig  = True
   }
 
@@ -189,5 +195,12 @@ data StopState
 
 instance Default StopState where
   def = NewSentence
+
+-- ** Pattern search and replace (exceptions from processing)
+
+data PatternReplace = PatternReplace
+  { pattern     :: Text
+  , replacement :: Text
+  }
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

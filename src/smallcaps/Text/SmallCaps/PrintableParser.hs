@@ -16,13 +16,13 @@ module Text.SmallCaps.PrintableParser where
 
 import            Prelude      hiding ( head, tail, null )
 
-import            Text.Parsec         ( runParser, oneOf, anyChar, many, many1, lower, upper, getState, modifyState )
+import            Text.Parsec         ( runParser, oneOf, anyChar, many, many1, lower, upper, string, getState, modifyState )
 import qualified  Text.Parsec    as P ( space, newline )
 import            Text.Parsec.Text    ( GenParser )
-import            Data.Text           ( Text, null, empty, singleton, pack, head, tail, append, intercalate )
+import            Data.Text           ( Text, null, empty, singleton, pack, unpack, head, tail, append, intercalate )
 import            Control.Monad       ( msum )
 
-import            Text.SmallCaps.Config ( Config (..), StopState (..), ParserState (..), SubParser )
+import            Text.SmallCaps.Config ( Config (..), StopState (..), ParserState (..), SubParser, PatternReplace (..) )
 
 type Parser = GenParser ParserState
 
@@ -36,13 +36,18 @@ printable = fmap (intercalate (pack "")) $ many $ printableElement
 
 printableElement :: Parser Text
 printableElement = msum
-  [ lowers
+  [ excepts
+  , lowers
   , uppers
   , period
   , newline
   , space
   , misc
   ] 
+
+excepts :: Parser Text
+excepts = msum =<< fmap (map toParser . exceptions . config) getState
+  where toParser x = string (unpack $ pattern x) >> return (replacement x) >>= pass reset
 
 lowers :: Parser Text
 lowers = fmap pack $ many1 lower >>= pass reset
