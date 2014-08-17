@@ -16,7 +16,7 @@ module Text.SmallCaps.PrintableParser where
 
 import            Prelude      hiding ( head, tail, null )
 
-import            Text.Parsec         ( runParser, oneOf, anyChar, many, many1, lower, upper, string, getState, modifyState )
+import            Text.Parsec         ( runParser, try, oneOf, anyChar, many, many1, lower, upper, string, getState, modifyState )
 import qualified  Text.Parsec    as P ( space, newline )
 import            Text.Parsec.Text    ( GenParser )
 import            Data.Text           ( Text, null, empty, singleton, pack, unpack, head, tail, append, intercalate )
@@ -47,7 +47,7 @@ printableElement = msum
 
 excepts :: Parser Text
 excepts = msum =<< fmap (map toParser . exceptions . config) getState
-  where toParser x = string (unpack $ pattern x) >> return (replacement x) >>= pass reset
+  where toParser x = try (string (unpack $ pattern x)) >> return (replacement x) >>= pass reset
 
 lowers :: Parser Text
 lowers = fmap pack $ many1 lower >>= pass reset
