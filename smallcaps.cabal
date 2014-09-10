@@ -55,8 +55,10 @@ license:             BSD3
 license-file:        LICENSE
 author:              Stefan Berthold
 maintainer:          stefan.berthold@gmx.net
-category:            Text
+bug-reports:         https://github.com/ZjMNZHgG5jMXw/smallcaps/issues
+category:            Text, LaTeX
 build-type:          Simple
+tested-with:         GHC == 7.8.3
 extra-source-files:  src/test/Tests.hs
                      doc/lesscase.markdown
                      man/man1/lesscase.1
