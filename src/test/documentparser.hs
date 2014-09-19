@@ -63,9 +63,10 @@ changed'  = Printable (pack "{\\small AB}")
 
 testconf :: Config
 testconf = clean
-  { periodChars = periodChars def
-  , search      = whitelist []
-  , replace     = replace     def
+  { periodChars   = periodChars   def
+  , search        = whitelist     []
+  , replace       = replace       def
+  , replaceFilter = replaceFilter def
   }
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

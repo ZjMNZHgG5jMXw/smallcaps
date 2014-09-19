@@ -56,7 +56,7 @@ uppers :: Parser Text
 uppers = do
   text <- fmap pack $ many1 upper
   state <- getState
-  if ignore state
+  if ignore state || not (replaceFilter (config state) text)
   then pass reset text
   else pass reset $ replace (config state) (stop state) text
 

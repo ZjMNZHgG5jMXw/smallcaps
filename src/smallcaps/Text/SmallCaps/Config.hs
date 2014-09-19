@@ -62,6 +62,7 @@ data Config = Config
   , unskip        :: LaTeXElement -> Bool       -- ^ undo skip, e.g., at @\normalsize@ when skipping @\small@
   , eos           :: LaTeXElement -> Bool       -- ^ end of sentence, start with new one
   , replace       :: StopState -> Text -> Text  -- ^ formatting for small caps
+  , replaceFilter :: Text -> Bool               -- ^ filter for small caps candidates (e.g., for assuring a certain minimum length)
   , exceptions    :: [PatternReplace]           -- ^ search for patterns in printables and replace them (no further processing)
   , inlineConfig  :: Bool                       -- ^ dynamic reconfiguration in LaTeX comments
   }
@@ -75,6 +76,7 @@ instance Default Config where
     , unskip        = defaultUnskip
     , eos           = defaultEos
     , replace       = defaultReplace
+    , replaceFilter = defaultReplaceFilter
     , exceptions    = defaultExceptions
     , inlineConfig  = True
     }
@@ -124,6 +126,9 @@ defaultNewSentence format = newSentence start inner
     start caps  = cons (T.head caps) $ format (T.tail caps)
     inner caps  = format caps
 
+defaultReplaceFilter :: Text -> Bool
+defaultReplaceFilter = const True
+
 defaultExceptions :: [PatternReplace]
 defaultExceptions = []
 
@@ -146,6 +151,7 @@ clean = Config
   , unskip        = const False
   , eos           = const False
   , replace       = const id
+  , replaceFilter = const False
   , exceptions    = []
   , inlineConfig  = True
   }
