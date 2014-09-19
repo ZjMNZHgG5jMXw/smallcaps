@@ -6,7 +6,7 @@ import qualified Data.Default  as Default ( def )
 import Data.Maybe                         ( isJust )
 
 import Text.SmallCaps.LaTeX               ( LaTeXElement (..) )
-import Text.SmallCaps.Config              ( ParserState (..), Config (..), clean, isolateWith )
+import Text.SmallCaps.Config              ( ParserState (..), Config (..), StopState (..), clean, isolateWith )
 import Text.SmallCaps.ConfigParser        ( reconfigure )
 
 import Tests                              ( failOn )
@@ -116,10 +116,10 @@ checkBlackWhitePeriods :: [Char] -> [Char] -> Config -> Bool
 checkBlackWhitePeriods blacks whites conf = foldr ((&&) . (`elem` periodChars conf)) (not (foldr ((||) . (`elem` periodChars conf)) False blacks)) whites
 
 checkSubstBlock :: String -> Config -> Bool
-checkSubstBlock macro conf = replace conf (pack "cba") == cons '{' (pack macro) `append` (pack " cba}")
+checkSubstBlock macro conf = replace conf None (pack "cba") == cons '{' (pack macro) `append` (pack " cba}")
 
 checkSubstArg :: String -> Config -> Bool
-checkSubstArg macro conf = replace conf (pack "cba") == pack macro `append` pack "{cba}"
+checkSubstArg macro conf = replace conf None (pack "cba") == pack macro `append` pack "{cba}"
 
 checkBlackWhite :: (Config -> LaTeXElement -> Bool) -> [LaTeXElement] -> [LaTeXElement] -> Config -> Bool
 checkBlackWhite fun blacks whites conf = foldr ((&&) . fun conf) (not (foldr ((||) . fun conf) False blacks)) whites
