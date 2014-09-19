@@ -15,7 +15,7 @@
 module Text.SmallCaps.Config where
 
 import            Data.Default    ( Default, def )
-import            Data.Text as T  ( Text, pack, cons, snoc, head, tail, append )
+import            Data.Text as T  ( Text, null, pack, cons, snoc, head, tail, append )
 import            Data.Map        ( Map )
 import qualified  Data.Map as Map ( empty, fromList )
 import            Control.Monad   ( liftM2 )
@@ -123,8 +123,11 @@ defaultReplaceTemplate'   = defaultNewSentence . formatInArg
 defaultNewSentence :: (Text -> Text) -> StopState -> Text -> Text
 defaultNewSentence format = newSentence start inner
   where
-    start caps  = cons (T.head caps) $ format (T.tail caps)
+    start caps  = cons (T.head caps) $ format' (T.tail caps)
     inner caps  = format caps
+    format' x
+      | T.null x  = x
+      | otherwise = format x
 
 defaultReplaceFilter :: Text -> Bool
 defaultReplaceFilter = const True
