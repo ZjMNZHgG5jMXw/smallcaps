@@ -112,7 +112,7 @@ replaceMacro :: Config -> Style -> Parser Config
 replaceMacro conf style
   | style == NoArg  = fun defaultReplaceTemplate
   | otherwise       = fun defaultReplaceTemplate'
-  where fun gun = lex $ macroBegin >> macroName >>= \macro -> return $ conf { replace = gun macro }
+  where fun gun = lex $ macroBegin >> macroName >>= \macro -> return $ conf { replace = gun (cons '\\' macro) }
 
 -- ** Search filter
 
