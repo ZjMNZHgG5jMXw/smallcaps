@@ -47,10 +47,10 @@ printableElement = msum
 
 excepts :: Parser Text
 excepts = msum =<< fmap (map toParser . exceptions . config) getState
-  where toParser x = try (string (unpack $ pattern x)) >> return (replacement x) >>= pass reset
+  where toParser x = try (string (unpack $ pattern x)) >> pass reset (replacement x)
 
 lowers :: Parser Text
-lowers = fmap pack $ many1 lower >>= pass reset
+lowers =  pass reset . pack =<< many1 lower
 
 uppers :: Parser Text
 uppers = do
@@ -65,16 +65,16 @@ uppers = do
 period :: Parser Text
 period = do
   ps <- fmap (periodChars . config) getState
-  fmap singleton $ oneOf ps >>= pass set
+  pass set . singleton =<< oneOf ps
 
 space :: Parser Text
-space = fmap singleton $ P.space >>= pass sticky
+space =  pass sticky . singleton =<< P.space
 
 newline :: Parser Text
-newline = fmap singleton $ P.newline >>= pass inc
+newline = pass inc . singleton =<< P.newline
 
 misc :: Parser Text
-misc = fmap singleton $ anyChar >>= pass reset
+misc = pass reset . singleton =<< anyChar
 
 -- ** State modification
 
