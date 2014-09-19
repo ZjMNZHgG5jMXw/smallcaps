@@ -26,7 +26,7 @@ import Data.Attoparsec.Combinator ( many' )
 import Control.Monad              ( mplus, msum )
 
 import Text.SmallCaps.LaTeX       ( LaTeXElement, name )
-import Text.SmallCaps.Config      ( ParserState (..), Config (..), PatternReplace (..), blacklist, whitelist )
+import Text.SmallCaps.Config      ( ParserState (..), Config (..), PatternReplace (..), defaultReplaceTemplate, defaultReplaceTemplate', blacklist, whitelist )
 import Text.SmallCaps.TeXParser   ( macroBegin, macroName )
 
 reconfigure :: ParserState -> Text -> Either (Text, Config) Config
@@ -110,8 +110,8 @@ replaceStyleInarg = lex (asciiCI (pack "as")) >> lex (asciiCI (pack "argument"))
 
 replaceMacro :: Config -> Style -> Parser Config
 replaceMacro conf style
-  | style == NoArg  = fun (\macro caps -> pack "{\\" `append` macro `append` cons ' ' (snoc caps '}'))
-  | otherwise       = fun (\macro caps -> cons '\\' macro `append` cons '{' (snoc caps '}'))
+  | style == NoArg  = fun defaultReplaceTemplate
+  | otherwise       = fun defaultReplaceTemplate'
   where fun gun = lex $ macroBegin >> macroName >>= \macro -> return $ conf { replace = gun macro }
 
 -- ** Search filter

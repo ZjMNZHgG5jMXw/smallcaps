@@ -19,7 +19,7 @@ import            Prelude      hiding ( head, tail, null )
 import            Text.Parsec         ( runParser, try, oneOf, anyChar, many, many1, lower, upper, string, getState, modifyState )
 import qualified  Text.Parsec    as P ( space, newline )
 import            Text.Parsec.Text    ( GenParser )
-import            Data.Text           ( Text, null, empty, singleton, pack, unpack, head, tail, append, intercalate )
+import            Data.Text           ( Text, singleton, pack, unpack, intercalate )
 import            Control.Monad       ( msum )
 
 import            Text.SmallCaps.Config ( Config (..), StopState (..), ParserState (..), SubParser, PatternReplace (..) )
@@ -57,10 +57,8 @@ uppers = do
   text <- fmap pack $ many1 upper
   state <- getState
   if ignore state
-  then return text >>= pass reset
-  else do
-    let (h,t) = uc text (stop state)
-    pass reset $ h `append` replace' (config state) t
+  then pass reset text
+  else pass reset $ replace (config state) (stop state) text
 
 period :: Parser Text
 period = do
@@ -97,17 +95,5 @@ sticky = modifyState (\state -> state { stop = inc' (stop state) }) where
   inc' None     = None
   inc' NewLine  = NewLine
   inc' _        = NewSentence
-
-uc :: Text -> StopState -> (Text, Text)
-uc text state
-  | state == NewSentence  = (singleton (head text), tail text)
-  | otherwise             = (empty, text)
-
--- ** Text modification
-
-replace' :: Config -> Text -> Text
-replace' conf text
-  | null text = text
-  | otherwise = replace conf text
 
 -- vim: ft=haskell:sts=2:sw=2:et:nu:ai

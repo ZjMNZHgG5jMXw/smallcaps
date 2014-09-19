@@ -15,7 +15,7 @@
 module Text.SmallCaps.Config where
 
 import            Data.Default    ( Default, def )
-import            Data.Text       ( Text, pack, snoc, append )
+import            Data.Text as T  ( Text, pack, cons, snoc, head, tail, append )
 import            Data.Map        ( Map )
 import qualified  Data.Map as Map ( empty, fromList )
 import            Control.Monad   ( liftM2 )
@@ -61,7 +61,7 @@ data Config = Config
   , skip          :: LaTeXElement -> Bool       -- ^ skip searching for the rest of the block etc.
   , unskip        :: LaTeXElement -> Bool       -- ^ undo skip, e.g., at @\normalsize@ when skipping @\small@
   , eos           :: LaTeXElement -> Bool       -- ^ end of sentence, start with new one
-  , replace       :: Text -> Text               -- ^ formatting for small caps
+  , replace       :: StopState -> Text -> Text  -- ^ formatting for small caps
   , exceptions    :: [PatternReplace]           -- ^ search for patterns in printables and replace them (no further processing)
   , inlineConfig  :: Bool                       -- ^ dynamic reconfiguration in LaTeX comments
   }
@@ -107,8 +107,22 @@ defaultEos = after
   , "itemize", "enumerate", "description"
   ]
 
-defaultReplace :: Text -> Text
-defaultReplace caps = pack "{\\small " `append` snoc caps '}'
+defaultReplace :: StopState -> Text -> Text
+defaultReplace  = defaultReplaceTemplate $ pack "\\small"
+
+defaultReplaceTemplate :: Text -> StopState -> Text -> Text
+defaultReplaceTemplate    = defaultNewSentence . formatNoArg
+  where formatNoArg macro = cons '{' . append macro . flip snoc '}' . cons ' '
+
+defaultReplaceTemplate' :: Text -> StopState -> Text -> Text
+defaultReplaceTemplate'   = defaultNewSentence . formatInArg
+  where formatInArg macro = append macro . cons '{' . flip snoc '}'
+
+defaultNewSentence :: (Text -> Text) -> StopState -> Text -> Text
+defaultNewSentence format = newSentence start inner
+  where
+    start caps  = cons (T.head caps) $ format (T.tail caps)
+    inner caps  = format caps
 
 defaultExceptions :: [PatternReplace]
 defaultExceptions = []
@@ -131,7 +145,7 @@ clean = Config
   , skip          = const False
   , unskip        = const False
   , eos           = const False
-  , replace       = id
+  , replace       = const id
   , exceptions    = []
   , inlineConfig  = True
   }
@@ -153,7 +167,7 @@ small :: Config
 small = def
   { skip    = (not . after ["\\small"])       &&& (after ["\\normalsize"] ||| defaultSkip)
   , unskip  = (not . after ["\\normalsize"])  &&& (after ["\\small"]      ||| defaultUnskip)
-  , replace = \caps -> pack "{\\footnotesize " `append` snoc caps '}'
+  , replace = defaultReplaceTemplate $ pack "\\footnotesize"
   }
 
 whitelist :: [String] -> LaTeXElement -> Bool
@@ -195,6 +209,11 @@ data StopState
 
 instance Default StopState where
   def = NewSentence
+
+newSentence :: (Text -> Text) -> (Text -> Text) -> StopState -> Text -> Text
+newSentence fun gun stopstate
+  | stopstate == NewSentence  = fun
+  | otherwise                 = gun
 
 -- ** Pattern search and replace (exceptions from processing)
 
