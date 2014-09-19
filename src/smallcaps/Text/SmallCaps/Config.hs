@@ -50,6 +50,7 @@ defaultProfile = Map.fromList [ (pack "default",      def)
                               , (pack "conservative", conservative)
                               , (pack "busy",         busy)
                               , (pack "small",        small)
+                              , (pack "footnote",     footnote)
                               ]
 
 -- ** Configuration data type
@@ -89,7 +90,7 @@ defaultSearch = whitelist ["document", "\\\\"]
 
 defaultIsolate :: LaTeXElement -> Maybe Text
 defaultIsolate = isolateWith  [ ("abstract",    "small")
-                              , ("\\footnote",  "small")
+                              , ("\\footnote",  "footnote")
                               , ("\\marginpar", "default")
                               ]
 
@@ -177,6 +178,14 @@ small = def
   { skip    = (not . after ["\\small"])       &&& (after ["\\normalsize"] ||| defaultSkip)
   , unskip  = (not . after ["\\normalsize"])  &&& (after ["\\small"]      ||| defaultUnskip)
   , replace = defaultReplaceTemplate $ pack "\\footnotesize"
+  }
+
+-- | footnote font configuration
+footnote :: Config
+footnote = def
+  { skip    = (not . after ["\\scriptsize"])  &&& (after ["\\normalsize"] ||| defaultSkip)
+  , unskip  = (not . after ["\\normalsize"])  &&& (after ["\\scriptsize"] ||| defaultUnskip)
+  , replace = defaultReplaceTemplate $ pack "\\scriptsize"
   }
 
 whitelist :: [String] -> LaTeXElement -> Bool
