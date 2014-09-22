@@ -1,20 +1,22 @@
 % LESSCASE(1) lesscase user manual
 % Stefan Berthold <stefan.berthold@gmx.net>
-% January 28, 2014
+% September 22, 2014
 
 # NAME
 
-lesscase - a LaTeX pre-processor for formatting uppercase letters
+lesscase, twocase - LaTeX pre-processors for formatting uppercase letters
 
 # SYNOPSIS
 
 lesscase [*options*] [*file*]
 
+twocase [*options*] [*file*]
+
 # DESCRIPTION
 
-lesscase is a pre-processor for LaTeX files. It formats sequences of uppercase letters, e.g., ABC, with TeX's `\small` macro, e.g., `{\small ABC}`. Uppercase letters at the beginning of sentences are not formatted. The LaTeX macro can be chosen by the user as well as the formatting conditions.
+lesscase and twocase are pre-processors for LaTeX files. They format sequences of uppercase letters, e.g., ABC, with TeX's `\small` macro, e.g., `{\small ABC}`. Uppercase letters at the beginning of sentences are not formatted. The LaTeX macro can be chosen by the user as well as the formatting conditions. lesscase formats all sequences of uppercase letters. twocase formats sequences of two or more uppercase letters.
 
-lesscase can be configured through its command line arguments as well as through TeX comments. In the default configuration, lesscase does not change the  content of  any  macro  argument  or  environment  (different  from document). More (`conservative`) and less restrictive configuration profiles (`busy`) can be activated and adapted. The default configuration can be restored at any time, even while processing of the input file.
+Both programs can be configured through their command line arguments as well as through TeX comments. In the default configuration, each program does not change the content of any macro argument or environment (different from document). More (`conservative`) and less restrictive configuration profiles (`busy`) can be activated and adapted. The default configuration can be restored at any time, even while processing of the input file.
 
 # EXAMPLES
 
@@ -131,6 +133,6 @@ The following LaTeX comments can be embedded into LaTeX source code and will rec
 
 # BUGS
 
-lesscase is known to ignore the tab characters (&) in tabular environments.
+lesscase and twocase are known to ignore the tab characters (&) in tabular environments.
 
-lesscase does not know about the somewhat more flexible delimiters of verbatim macros (`\verb`).
+lesscase and twocase do not know about the flexible delimiters of verbatim macros (`\verb`).
