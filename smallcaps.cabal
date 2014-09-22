@@ -69,6 +69,7 @@ tested-with:         GHC == 7.8.3
 extra-source-files:  src/test/Tests.hs
                      doc/lesscase.markdown
                      man/man1/lesscase.1
+                     man/man1/twocase.1
 cabal-version:       >=1.10
 
 library
