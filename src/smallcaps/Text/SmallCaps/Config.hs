@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 -- |
 -- Module      :  Text.SmallCaps.Config
--- Copyright   :  (c) Stefan Berthold 2014
+-- Copyright   :  (c) Stefan Berthold 2014-2015
 -- License     :  BSD3-style (see LICENSE)
 --
 -- Maintainer  :  stefan.berthold@gmx.net

@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 -- |
 -- Module      :  Text.SmallCaps
--- Copyright   :  (c) Stefan Berthold 2014
+-- Copyright   :  (c) Stefan Berthold 2014-2015
 -- License     :  BSD3-style (see LICENSE)
 --
 -- Maintainer  :  stefan.berthold@gmx.net
@@ -21,7 +21,7 @@ import System.Directory           ( renameFile, canonicalizePath, makeRelativeTo
 import System.Environment         ( getProgName, getArgs )
 import System.Exit                ( exitFailure )
 import System.Console.GetOpt      ( OptDescr ( Option ), ArgDescr ( NoArg, ReqArg ), ArgOrder ( Permute ), getOpt, usageInfo )
-import Data.Version               ( Version ( Version ), versionBranch, versionTags, showVersion )
+import Data.Version               ( Version (), makeVersion, showVersion )
 import Data.Default               ( def )
 import Data.Attoparsec.Text       ( parseOnly )
 import Data.Text                  ( Text, pack, unpack )
@@ -40,10 +40,7 @@ import qualified Text.SmallCaps.ConfigParser as ConfigParser ( Style ( .. ) )
 -- ** Meta information
 
 version :: Version
-version = Version
-  { versionBranch = [0,6,0,0]
-  , versionTags   = []
-  }
+version = makeVersion [0,6,0,1]
 
 -- ** Pure functions
 
