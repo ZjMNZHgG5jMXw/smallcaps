@@ -40,7 +40,7 @@ import qualified Text.SmallCaps.ConfigParser as ConfigParser ( Style ( .. ) )
 -- ** Meta information
 
 version :: Version
-version = makeVersion [0,6,0,1]
+version = makeVersion [0,6,0,4]
 
 -- ** Pure functions
 
