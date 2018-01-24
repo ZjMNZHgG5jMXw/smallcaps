@@ -5,7 +5,7 @@ name:                smallcaps
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.6.0.4
+version:             0.6.0.5
 synopsis:            Flatten camel case text in LaTeX files
 description:         smallcaps is a pre-processor library for LaTeX files.
                      The library comes with an executable that makes most
@@ -84,35 +84,35 @@ library
                      Text.SmallCaps.PrintableParser
                      Text.SmallCaps.ConfigParser
                      Text.SmallCaps.DocumentParser
-  build-depends:     base         >=4.8   && <4.10,
-                     text         >=0.11  && <1.3,
-                     attoparsec   >=0.10  && <0.14,
-                     parsec       >=3.1   && <3.2,
-                     data-default >=0.5   && <0.8,
-                     containers   >=0.5   && <0.6,
-                     transformers >=0.3   && <0.6,
-                     directory    >=1.2   && <1.4,
-                     filepath     >=1.3   && <1.5
+  build-depends:     base >= 4.8 && <4.11,
+                     text,
+                     attoparsec,
+                     parsec,
+                     data-default,
+                     containers,
+                     transformers,
+                     directory,
+                     filepath
   default-language:  Haskell2010
   ghc-options:       -Wall
 
 executable lesscase
   hs-source-dirs:    src/lesscase
   main-is:           lesscase.hs
-  build-depends:     base         >=4.8   && <4.10,
-                     data-default >=0.5   && <0.8,
-                     smallcaps    >=0.6   && <0.7
+  build-depends:     base >= 4.8 && <4.11,
+                     data-default,
+                     smallcaps
   default-language:  Haskell2010
   ghc-options:       -Wall
 
 executable twocase
   hs-source-dirs:    src/twocase
   main-is:           twocase.hs
-  build-depends:     base         >=4.8   && <4.10,
-                     data-default >=0.5   && <0.8,
-                     text         >=0.11  && <1.3,
-                     containers   >=0.5   && <0.6,
-                     smallcaps    >=0.6   && <0.7
+  build-depends:     base >= 4.8 && <4.11,
+                     data-default,
+                     text,
+                     containers,
+                     smallcaps
   default-language:  Haskell2010
   ghc-options:       -Wall
 
@@ -120,10 +120,11 @@ test-suite texparser
   hs-source-dirs:    src/test
   type:              exitcode-stdio-1.0
   main-is:           texparser.hs
-  build-depends:     base         >=4.8   && <4.10,
-                     text         >=0.11  && <1.3,
-                     attoparsec   >=0.10  && <0.14,
-                     smallcaps    >=0.6   && <0.7
+  other-modules:     Tests
+  build-depends:     base >= 4.8 && <4.11,
+                     text,
+                     attoparsec,
+                     smallcaps
   default-language:  Haskell2010
   ghc-options:       -Wall
 
@@ -131,10 +132,11 @@ test-suite texlatexparser
   hs-source-dirs:    src/test
   type:              exitcode-stdio-1.0
   main-is:           texlatexparser.hs
-  build-depends:     base         >=4.8   && <4.10,
-                     text         >=0.11  && <1.3,
-                     parsec       >=3.1   && <3.2,
-                     smallcaps    >=0.6   && <0.7
+  other-modules:     Tests
+  build-depends:     base >= 4.8 && <4.11,
+                     text,
+                     parsec,
+                     smallcaps
   default-language:  Haskell2010
   ghc-options:       -Wall
 
@@ -142,10 +144,11 @@ test-suite inputfiles
   hs-source-dirs:    src/test
   type:              exitcode-stdio-1.0
   main-is:           inputfiles.hs
-  build-depends:     base         >=4.8   && <4.10,
-                     text         >=0.11  && <1.3,
-                     containers   >=0.5   && <0.6,
-                     smallcaps    >=0.6   && <0.7
+  other-modules:     Tests
+  build-depends:     base >= 4.8 && <4.11,
+                     text,
+                     containers,
+                     smallcaps
   default-language:  Haskell2010
   ghc-options:       -Wall
 
@@ -153,10 +156,11 @@ test-suite configparser
   hs-source-dirs:    src/test
   type:              exitcode-stdio-1.0
   main-is:           configparser.hs
-  build-depends:     base         >=4.8   && <4.10,
-                     text         >=0.11  && <1.3,
-                     data-default >=0.5   && <0.8,
-                     smallcaps    >=0.6   && <0.7
+  other-modules:     Tests
+  build-depends:     base >= 4.8 && <4.11,
+                     text,
+                     data-default,
+                     smallcaps
   default-language:  Haskell2010
   ghc-options:       -Wall
 
@@ -164,10 +168,11 @@ test-suite printableparser
   hs-source-dirs:    src/test
   type:              exitcode-stdio-1.0
   main-is:           printableparser.hs
-  build-depends:     base         >=4.8   && <4.10,
-                     text         >=0.11  && <1.3,
-                     data-default >=0.5   && <0.8,
-                     smallcaps    >=0.6   && <0.7
+  other-modules:     Tests
+  build-depends:     base >= 4.8 && <4.11,
+                     text,
+                     data-default,
+                     smallcaps
   default-language:  Haskell2010
   ghc-options:       -Wall
 
@@ -175,10 +180,11 @@ test-suite documentparser
   hs-source-dirs:    src/test
   type:              exitcode-stdio-1.0
   main-is:           documentparser.hs
-  build-depends:     base         >=4.8   && <4.10,
-                     text         >=0.11  && <1.3,
-                     data-default >=0.5   && <0.8,
-                     smallcaps    >=0.6   && <0.7
+  other-modules:     Tests
+  build-depends:     base >= 4.8 && <4.11,
+                     text,
+                     data-default,
+                     smallcaps
   default-language:  Haskell2010
   ghc-options:       -Wall
 
